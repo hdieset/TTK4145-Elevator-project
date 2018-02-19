@@ -45,19 +45,30 @@ func networkMain(syncArrayRx <-chan syncArray,
 
 	/* Now, we start an indefinite for loop, transmitting if 
 	   something on Tx channel, and vice versa */
+
+	localCopy := new(syncArray)
+	var dead bool = false // Usikker på om dette har blitt gjort riktig
 	for {
 		select {
-		case p := <- peerUpdateCh: 	// p.Peers/New/Lost
+		case newPeerList := <- peerUpdateCh: // p.Peers/New/Lost
 			// Har mistet eller fått peer
-			q.peers = p 
-		case q := <- mapRx: 		// q type syncArray
+			localCopy.peers = newPeerList
+			syncArrayRx 	<- localCopy
+		case newMap := <- mapRx: 		// q type syncArray
 			// Vi får sync_array fra andre på nettet
-			q.myID = id // Set myID to id
-			syncArrayTx <- q
-		case q := <- syncArrayRx:
+			if !localCopy.suicide {
+				q.myID 		= id 		// Set myID to id
+				localCopy 	= newMap	// Updating local copy
+				syncArrayRx <- newMap	// Sending to Sync Module
+			}
+		case newMap := <- syncArrayRx:
 			// Recieved syncArray from Sync module, send.
 			// Kanskje periodisk sending skal her?
-			mapTx <- q
+			localCopy = newMap
+			if newMap.suicide {
+				peerTxEnable <- false
+			}
+			mapTx 		<- localCopy
 		}
 	}
 }

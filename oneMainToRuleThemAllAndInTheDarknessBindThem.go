@@ -25,6 +25,7 @@ type syncArray struct {
 	erDetFredag 	bool
 	myID 			string
 	peers 			PeerUpdate
+	suicide			bool
 }
 
 func main() {
@@ -33,6 +34,9 @@ func main() {
 	syncArrayTx := make(chan syncArray)
 	syncArrayRx := make(chan syncArray)
 	go networkModule.networkMain(syncArrayRx,syncArrayTx);
+
+	a := new(PeerUpdate)
+
 }
 
 // syncArrayRx <-chan syncArray => kanalen mottar fra kanalen
