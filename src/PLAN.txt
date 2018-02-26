@@ -1,0 +1,11 @@
+**Plan** 
+
+
+>finne ut hvorfor den sender til seg selv (og om det er et problem) 
+
+>sette opp simulatoren 
+
+>sette opp hardware 
+
+> øv6 
+
