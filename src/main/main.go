@@ -65,23 +65,31 @@ func main() {
 		case a := <-networkRx:
 			fmt.Printf("Received: %#v\n", a.Iter)
 		}
-}
-
-	
+	}
 }
 
 // syncArrayRx <-chan syncArray => kanalen mottar fra kanalen
 
 //generate elevator-id with local IP + PID in a string
 func generateId()(id string) {
-	localIP, err := localip.LocalIP() 
-	if err != nil {
-		fmt.Println(err) 
-		localIP = "DISCONNECTED"
+	//var err error = 
+	localIP, err := localip.LocalIP()
+	//err := make(error)
+	for err != nil {
+		localIP, err = localip.LocalIP()
+		if err != nil {
+			fmt.Println(err)
+			fmt.Println("Failed to connect. Retrying in 3 seconds...")
+			time.Sleep(3 * time.Second)
+			//localIP = "DISCONNECTED"
+		}
 	}
+	
 	id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid()) //local IP and PID in a id-string
 	return 
 }
 
 //.bashrc
 //export GOPATH="$HOME/gruppeOgPlass9/project-gruppe-9/:"
+//GOPATH=$HOME/gruppeOgPlass9/project-gruppe-9/ <- kjøres i terminal.
+// for å vise gopath: go env
