@@ -9,6 +9,7 @@ import(
    	"network/bcast"
 	"network/peers"
 	"network/localip"
+	"elevatorCTRL"
 	. "param"
 	//"flag"
 	"time" 
@@ -54,6 +55,8 @@ func main() {
 		}
 	}()
 
+	elevatorCTRL.main()
+
 	for {
 		select {
 		case p := <-peerUpdateCh:
@@ -90,6 +93,8 @@ func generateId()(id string) {
 }
 
 //.bashrc
-//export GOPATH="$HOME/gruppeOgPlass9/project-gruppe-9/:"
+//export GOPATH=$HOME/gruppeOgPlass9/project-gruppe-9/
+//source .bashrc <- lagrer
+// echo $GOPATH <- viser gopath
 //GOPATH=$HOME/gruppeOgPlass9/project-gruppe-9/ <- kjøres i terminal.
 // for å vise gopath: go env
