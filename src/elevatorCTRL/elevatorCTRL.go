@@ -1,6 +1,6 @@
-package main
+package elevatorCTRL
 
-import "./elevio"
+import "elevio"
 import "fmt"
 
 func main(){
