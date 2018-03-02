@@ -9,7 +9,6 @@ import(
    	"network/bcast"
 	"network/peers"
 	"network/localip"
-	"elevatorCTRL"
 	. "param"
 	//"flag"
 	"time" 
@@ -55,7 +54,6 @@ func main() {
 		}
 	}()
 
-	elevatorCTRL.main()
 
 	for {
 		select {
