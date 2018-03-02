@@ -1,5 +1,5 @@
 # TTK4145 Real-time programming - Elevator project
-### Henrik Nyholm og Herman K. Dieset
+## Henrik Nyholm og Herman K. Dieset
 
 ![NTNU](https://innsida.ntnu.no/c/wiki/get_page_attachment?p_l_id=22780&nodeId=24647&title=Bruksregler+for+NTNU-logoen&fileName=variant1.jpg)
 
@@ -9,26 +9,37 @@ Features:
   - Works really well
   - I've just learned to write README.md files.
 
-# To do:
-Markup : - [ ] An uncompleted task
-         - [x] A completed task
-
-
-### Installation
-
-Dillinger requires [Node.js](https://nodejs.org/) v4+ to run.
-
-Install the dependencies and devDependencies and start the server.
-
-```sh
-$ cd dillinger
-$ npm install -d
-$ node app
+```none
+$$\   $$\                               $$\ $$\                                                               
+$$ |  $$ |                              \__|$$ |                                                              
+$$ |  $$ | $$$$$$\  $$$$$$$\   $$$$$$\  $$\ $$ |  $$\        $$$$$$$\ $$\   $$\  $$$$$$\   $$$$$$\   $$$$$$\  
+$$$$$$$$ |$$  __$$\ $$  __$$\ $$  __$$\ $$ |$$ | $$  |      $$  _____|$$ |  $$ |$$  __$$\ $$  __$$\ $$  __$$\ 
+$$  __$$ |$$$$$$$$ |$$ |  $$ |$$ |  \__|$$ |$$$$$$  /       \$$$$$$\  $$ |  $$ |$$ /  $$ |$$$$$$$$ |$$ |  \__|
+$$ |  $$ |$$   ____|$$ |  $$ |$$ |      $$ |$$  _$$<         \____$$\ $$ |  $$ |$$ |  $$ |$$   ____|$$ |      
+$$ |  $$ |\$$$$$$$\ $$ |  $$ |$$ |      $$ |$$ | \$$\       $$$$$$$  |\$$$$$$  |\$$$$$$$ |\$$$$$$$\ $$ |      
+\__|  \__| \_______|\__|  \__|\__|      \__|\__|  \__|      \_______/  \______/  \____$$ | \_______|\__|      
+                                                                                $$\   $$ |                    
+                                                                                \$$$$$$  |                    
+                                                                                 \______/                     
 ```
 
-For production environments...
+## Roadmap - Modules
+- [ ] Main (to start goroutines)
+- [x] Network (communicating to other elevators)
+- [ ] Sync array (updates and modifies the sync array)
+- [ ] Cost function (calculates whether an elevator should accept an order)
+- [ ] IO module (talks with the physical elevator)
 
-```sh
-$ npm install --production
-$ NODE_ENV=production node app
+## Installation and useful sidenotes
+
+Golang has to be installed, and the elevator's drivers (can be found through the TTK4145 repository).
+
+To set the GOPATH environment value in Linux, the following lines of code has to be run:
+
+```
+$ cd
+$ vim .bashrc                                           // Or other editor
+$ export GOPATH=$HOME/gruppeOgPlass9/project-gruppe-9/  // Set Gopath to project folder that contains the src-folder. 
+$ source .bashrc                                        // saves
+$ go env                                                // displays the GOPATH
 ```
