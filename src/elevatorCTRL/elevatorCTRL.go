@@ -2,8 +2,23 @@ package main
 
 import "./elevio"
 import "fmt"
+import "os/exec"
+import "os"
+import "path/filepath"
 
 func main(){
+    dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+    if err != nil {
+            fmt.Println(err)
+    }
+    fmt.Println(dir,"\n")
+	cmd := exec.Command("sh", "-c", dir+"/hall_request_assigner", "-i", `'{"hallRequests":[[false,false],[true,false],[false,false],[false,true]],"states":{"one":{"behaviour":"moving","floor":2,"direction":"up","cabRequests":[false,false,true,true]},"two":{"behaviour":"idle","floor":0,"direction":"stop","cabRequests":[false,false,false,false]}}}'`)
+	fmt.Println(cmd, "\n")	
+	result, err:= cmd.Output()
+
+	fmt.Println("\nhall request assigner result:", result, err)
+
+
 
     numFloors := 4
 
