@@ -1,17 +1,22 @@
 package bcast
 
 import (
-	"network/conn"
 	"encoding/json"
 	"fmt"
 	"net"
+	"network/conn"
 	"reflect"
-	"strings"
 )
+
+type Packet struct {
+	ID      string
+	Type    string
+	Content string
+}
 
 // Encodes received values from `chans` into type-tagged JSON, then broadcasts
 // it on `port`
-func Transmitter(port int, chans ...interface{}) {
+func Transmitter(port int, id string, chans ...interface{}) {
 	checkArgs(chans...)
 
 	n := 0
@@ -34,31 +39,39 @@ func Transmitter(port int, chans ...interface{}) {
 	for {
 		chosen, value, _ := reflect.Select(selectCases)
 		buf, _ := json.Marshal(value.Interface())
-		conn.WriteTo([]byte(typeNames[chosen]+string(buf)), addr)
+		p := Packet{ID: id, Type: typeNames[chosen], Content: string(buf)}
+		msg, _ := json.Marshal(p)
+		conn.WriteTo(msg, addr)
 	}
 }
 
 // Matches type-tagged JSON received on `port` to element types of `chans`, then
 // sends the decoded value on the corresponding channel
-func Receiver(port int, chans ...interface{}) {
+func Receiver(port int, id string, chans ...interface{}) {
 	checkArgs(chans...)
 
 	var buf [1024]byte
 	conn := conn.DialBroadcastUDP(port)
 	for {
 		n, _, _ := conn.ReadFrom(buf[0:])
-		for _, ch := range chans {
-			T := reflect.TypeOf(ch).Elem()
-			typeName := T.String()
-			if strings.HasPrefix(string(buf[0:n])+"{", typeName) {
-				v := reflect.New(T)
-				json.Unmarshal(buf[len(typeName):n], v.Interface())
 
-				reflect.Select([]reflect.SelectCase{{
-					Dir:  reflect.SelectSend,
-					Chan: reflect.ValueOf(ch),
-					Send: reflect.Indirect(v),
-				}})
+		var p Packet
+		json.Unmarshal(buf[0:n], &p)
+
+		if p.ID != id {
+			for _, ch := range chans {
+				T := reflect.TypeOf(ch).Elem()
+				typeName := T.String()
+				if p.Type == typeName {
+					v := reflect.New(T)
+					json.Unmarshal([]byte(p.Content), v.Interface())
+
+					reflect.Select([]reflect.SelectCase{{
+						Dir:  reflect.SelectSend,
+						Chan: reflect.ValueOf(ch),
+						Send: reflect.Indirect(v),
+					}})
+				}
 			}
 		}
 	}
