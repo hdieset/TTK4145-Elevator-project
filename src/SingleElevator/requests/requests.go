@@ -1,4 +1,4 @@
-package main
+package requests
 
 import (
 	."SingleElevator/elevator"
@@ -56,16 +56,56 @@ func requests_chooseDirection(e Elevator) Dirn {
 	return D_Stop
 }
 
+func requests_shouldStop(e Elevator) bool {
+	switch e.Direction {
+	case D_Down:
+		return e.Requests[e.Floor][B_HallDown] == 1 || e.Requests[e.Floor][B_Cab] == 1 || !requests_below(e)
+	case D_Up:
+		return e.Requests[e.Floor][B_HallUp] == 1 ||  e.Requests[e.Floor][B_Cab] == 1 || !requests_above(e)
+	case D_Stop:
+		fallthrough
+	default:
+		return true
+	}
+}
+
+func reqests_clearAtCurrentFloor(e Elevator) Elevator {
+	e.Requests[e.Floor][B_Cab] = 0
+	switch e.Direction {
+	case D_Up:
+		e.Requests[e.Floor][B_HallUp] = 0
+		if !requests_above(e) {
+			e.Requests[e.Floor][B_HallDown] = 0
+		}
+	case D_Down:
+		e.Requests[e.Floor][B_HallDown] = 0
+		if !requests_below(e) {
+			e.Requests[e.Floor][B_HallUp] = 0
+		}
+	case D_Stop:
+		fallthrough
+	default:
+		e.Requests[e.Floor][B_HallUp] = 0
+		e.Requests[e.Floor][B_HallDown] = 0
+	}
+	return e
+}
+
+/* // For testing purposes
  func main(){
 	//p() := fmt.Println()
 	//var heis Elevator
 	heis := Elevator_uninitialized()
 	//heis.config.doorOpenDuration_s = DoorOpenDuration_s
-	heis.Floor = 3
-	heis.Direction = D_Down
+	heis.Floor = 1
+	heis.Direction = D_Up
 	fmt.Println(heis.Floor)
-	heis.Requests[2][1] = 1
-	fmt.Println(requests_below(heis))
-	fmt.Println(requests_chooseDirection(heis))
+	heis.Requests[1][B_HallUp] = 1
+	heis.Requests[1][B_HallDown] = 1
+	heis.Requests[1][B_Cab] = 1
+	Elevator_print(heis)
+	fmt.Println("**********************************")
+	Elevator_print(reqests_clearAtCurrentFloor(heis))
 	//p(heis.floor)
 } 
+*/
