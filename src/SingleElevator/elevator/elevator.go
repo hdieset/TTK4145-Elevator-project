@@ -1,4 +1,4 @@
-package main
+package elevator
 
 import (
 	//."SingleElevator/timer" 
@@ -20,7 +20,6 @@ type Elevator struct {
 	dirn		Dirn
 	requests	[N_FLOORS][N_FLOORS]int
 	behaviour 	ElevatorBehaviour
-	//this used to be a struct, changed it because we dont have "clearRequestVariant"
 	doorOpenDuration_s float64
 }
 
@@ -39,18 +38,18 @@ func eb_toString(eb ElevatorBehaviour) string {
 }
 
 //problemer med at button ikke er en enum, må fikse senere...
-func elevator_print(es Elevator) {
+func Elevator_print(es Elevator) {
 	p := fmt.Printf
 	p("  +--------------------+\n")
 	p("  |floor = %-2d          |\n", es.floor)
 	p("  |dirn  = %-12.12s|\n", Elevio_dirn_toString(es.dirn))
 	p("  |behav = %-12.12s|\n", eb_toString(es.behaviour))
     p("  +--------------------+\n")
-    p("  |  | up  | dn  | cab |\n")
+    p("  |  | dn  | up  | cab |\n")
     for f := N_FLOORS-1; f >= 0; f-- {
     	p("  | %d", f)
     	for btn := 0; btn < N_BUTTONS; btn++ {
-    		if((f == N_FLOORS-1 && btn == B_HallUp)  || (f == 0 && btn == B_HallDown)){
+    		if((f == N_FLOORS-1 && Button(btn) == B_HallUp)  || (f == 0 && Button(btn) == B_HallDown)){
                 p("|     ")
             } else if es.requests[f][btn] == 1 {
             	p("|  #  ")
@@ -65,7 +64,7 @@ func elevator_print(es Elevator) {
 
 
 
-func elevator_uninitialized() Elevator {
+func Elevator_uninitialized() Elevator {
 	e := Elevator {
 		floor: -1,
 		dirn: D_Stop, 
@@ -75,8 +74,11 @@ func elevator_uninitialized() Elevator {
 	return e
 }
 
-func main() {
-	test := elevator_uninitialized()
-	elevator_print(test)
-}
+/*func main() {
+	test := Elevator_uninitialized()
+	test.dirn = D_Up
+	test.requests[2][1] = 1
+	test.requests[1][2] = 1
+	Elevator_print(test)
+}*/
 

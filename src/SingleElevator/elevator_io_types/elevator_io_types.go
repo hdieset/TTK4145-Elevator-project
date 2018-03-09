@@ -2,7 +2,7 @@ package elevator_io_types
 
 const ( 
 	N_FLOORS = 4
-	N_BUTTONS = 2
+	N_BUTTONS = 3
 )
 
 type Dirn int 
@@ -14,7 +14,7 @@ const (
 
 type Button int 
 const (
-	B_HallUp = Button(-1)
-	B_HallDown = Button(0)
-	B_Cab = Button(1)
+	B_HallDown  = Button(0)
+	B_HallUp 	= Button(1)
+	B_Cab 		= Button(2)
 )
