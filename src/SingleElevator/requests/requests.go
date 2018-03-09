@@ -1,4 +1,4 @@
-package main
+package requests
 
 import (
 	."SingleElevator/elevator"
@@ -91,7 +91,7 @@ func reqests_clearAtCurrentFloor(e Elevator) Elevator {
 	return e
 }
 
-
+/* // For testing purposes
  func main(){
 	//p() := fmt.Println()
 	//var heis Elevator
@@ -108,3 +108,4 @@ func reqests_clearAtCurrentFloor(e Elevator) Elevator {
 	Elevator_print(reqests_clearAtCurrentFloor(heis))
 	//p(heis.floor)
 } 
+*/
