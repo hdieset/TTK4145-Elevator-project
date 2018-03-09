@@ -1,0 +1,16 @@
+## Implemented functions
+- [ ] con_load.h
+- [ ] copy_driver.sh
+- [x] elevator.c
+- [ ] elevator.con
+- [x] elevator.h
+- [ ] elevator_io_device.c
+- [ ] elevator_io_device.h
+- [ ] elevator_io_types.h
+- [ ] fsm.c
+- [ ] fsm.h
+- [ ] main.c
+- [ ] requests.c
+- [ ] requests.h
+- [x] timer.c
+- [x] timer.h
