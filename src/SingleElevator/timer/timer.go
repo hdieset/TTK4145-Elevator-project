@@ -15,8 +15,8 @@ func get_wall_time() float64 {
 var timerEndTime float64 
 var timerActive  bool
 
-func Timer_start(duration float64) {
-	timerEndTime = get_wall_time() + duration
+func Timer_start(duration_s float64) {
+	timerEndTime = get_wall_time() + duration_s
 	timerActive = true;
 }
 

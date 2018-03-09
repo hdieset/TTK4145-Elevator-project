@@ -1,37 +1,10 @@
-package main
+package requests
 
-import "fmt"
+import ."SingleElevator/elevator"
 
 const ( // Some constans that should not be decleared here.
-	N_FLOORS = 4
-	N_BUTTONS = 2
 	DoorOpenDuration_s = 5
 )
-
-type Dirn int 
-const (
-	D_Down = Dirn(-1)
-	D_Stop = Dirn(0)
-	D_Up   = Dirn(1)
-)
-
-type ElevatorBehaviour int
-const(
-	EB_Idle		= iota   // Just set arbitrary values for these
-	EB_DoorOpen
-	EB_Moving
-)
-
-type Elevator struct {
-	floor 		int
-	dirn		Dirn
-	requests	[N_FLOORS][N_FLOORS]int
-	behaviour 	ElevatorBehaviour
-	
-	config struct {
-		doorOpenDuration_s int
-	}
-}
 
 func requests_above(e Elevator) bool {
 	for f := e.floor + 1; f < N_FLOORS; f++ {
@@ -79,7 +52,7 @@ func requests_chooseDirection(e Elevator) Dirn {
 	return D_Stop
 }
 
-func main(){
+ /* func main(){
 	//p() := fmt.Println()
 	var heis Elevator
 	//heis.config.doorOpenDuration_s = DoorOpenDuration_s
@@ -90,4 +63,4 @@ func main(){
 	fmt.Println(requests_below(heis))
 	fmt.Println(requests_chooseDirection(heis))
 	//p(heis.floor)
-}
+} */ 
