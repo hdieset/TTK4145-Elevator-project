@@ -56,16 +56,33 @@ func requests_chooseDirection(e Elevator) Dirn {
 	return D_Stop
 }
 
+func requests_shouldStop(e Elevator) bool {
+	switch e.Direction {
+	case D_Down:
+		return e.Requests[e.Floor][B_HallDown] == 1 || e.Requests[e.Floor][B_Cab] == 1 || !requests_below(e)
+	case D_Up:
+		return e.Requests[e.Floor][B_HallUp] == 1 ||  e.Requests[e.Floor][B_Cab] == 1 || !requests_above(e)
+	case D_Stop:
+		return true 
+	default:
+		return true
+	}
+}
+
+
  func main(){
 	//p() := fmt.Println()
 	//var heis Elevator
 	heis := Elevator_uninitialized()
 	//heis.config.doorOpenDuration_s = DoorOpenDuration_s
-	heis.Floor = 3
-	heis.Direction = D_Down
+	heis.Floor = 2
+	heis.Direction = D_Up
 	fmt.Println(heis.Floor)
-	heis.Requests[2][1] = 1
+	heis.Requests[1][B_HallUp] = 1
+	heis.Requests[1][B_HallDown] = 1
+	heis.Requests[1][B_Cab] = 1
+	Elevator_print(heis)
 	fmt.Println(requests_below(heis))
-	fmt.Println(requests_chooseDirection(heis))
+	fmt.Println(requests_shouldStop(heis))
 	//p(heis.floor)
 } 
