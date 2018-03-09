@@ -1,6 +1,6 @@
 package elevator_io_device 
 
-import ."SingleElevator/elevator_io_types"
+import ."param"
 
 //there should be more functions above and under theese stringfunctions
 
@@ -17,7 +17,7 @@ func Elevio_dirn_toString(d Dirn) string {
 	}
 }
 
-func Elevio_button_toString(b Button) string {
+func Elevio_button_toString(b ButtonType) string {
 	switch b {
 		case B_HallUp:
 			return "B_HallUp"
