@@ -63,10 +63,32 @@ func requests_shouldStop(e Elevator) bool {
 	case D_Up:
 		return e.Requests[e.Floor][B_HallUp] == 1 ||  e.Requests[e.Floor][B_Cab] == 1 || !requests_above(e)
 	case D_Stop:
-		return true 
+		fallthrough
 	default:
 		return true
 	}
+}
+
+func reqests_clearAtCurrentFloor(e Elevator) Elevator {
+	e.Requests[e.Floor][B_Cab] = 0
+	switch e.Direction {
+	case D_Up:
+		e.Requests[e.Floor][B_HallUp] = 0
+		if !requests_above(e) {
+			e.Requests[e.Floor][B_HallDown] = 0
+		}
+	case D_Down:
+		e.Requests[e.Floor][B_HallDown] = 0
+		if !requests_below(e) {
+			e.Requests[e.Floor][B_HallUp] = 0
+		}
+	case D_Stop:
+		fallthrough
+	default:
+		e.Requests[e.Floor][B_HallUp] = 0
+		e.Requests[e.Floor][B_HallDown] = 0
+	}
+	return e
 }
 
 
@@ -75,14 +97,14 @@ func requests_shouldStop(e Elevator) bool {
 	//var heis Elevator
 	heis := Elevator_uninitialized()
 	//heis.config.doorOpenDuration_s = DoorOpenDuration_s
-	heis.Floor = 2
+	heis.Floor = 1
 	heis.Direction = D_Up
 	fmt.Println(heis.Floor)
 	heis.Requests[1][B_HallUp] = 1
 	heis.Requests[1][B_HallDown] = 1
 	heis.Requests[1][B_Cab] = 1
 	Elevator_print(heis)
-	fmt.Println(requests_below(heis))
-	fmt.Println(requests_shouldStop(heis))
+	fmt.Println("**********************************")
+	Elevator_print(reqests_clearAtCurrentFloor(heis))
 	//p(heis.floor)
 } 
