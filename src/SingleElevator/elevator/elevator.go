@@ -1,28 +1,11 @@
-package elevator
+package main
 
 import (
 	//."SingleElevator/timer" 
 	"fmt"
-	."SingleElevator/elevator_io_types" 
+	."param" 
 	."SingleElevator/elevator_io_device"
 )
-
-
-type ElevatorBehaviour int
-const(
-	EB_Idle		= iota   // Just set arbitrary values for these
-	EB_DoorOpen
-	EB_Moving
-)
-
-type Elevator struct {
-	Floor 		int
-	Direction	Dirn
-	Requests	[N_FLOORS][N_FLOORS]int
-	Behaviour 	ElevatorBehaviour
-	DoorOpenDuration_s float64
-}
-
 
 func eb_toString(eb ElevatorBehaviour) string {
 	switch eb {
@@ -49,7 +32,7 @@ func Elevator_print(es Elevator) {
     for f := N_FLOORS-1; f >= 0; f-- {
     	p("  | %d", f)
     	for btn := 0; btn < N_BUTTONS; btn++ {
-    		if((f == N_FLOORS-1 && Button(btn) == B_HallUp)  || (f == 0 && Button(btn) == B_HallDown)){
+    		if((f == N_FLOORS-1 && ButtonType(btn) == B_HallUp)  || (f == 0 && ButtonType(btn) == B_HallDown)){
                 p("|     ")
             } else if es.Requests[f][btn] == 1 {
             	p("|  #  ")
@@ -74,11 +57,11 @@ func Elevator_uninitialized() Elevator {
 	return e
 }
 
-/*func main() {
+func main() {
 	test := Elevator_uninitialized()
 	test.Direction = D_Up
 	test.Requests[2][1] = 1
 	test.Requests[1][2] = 1
 	Elevator_print(test)
-}*/
+}
 
