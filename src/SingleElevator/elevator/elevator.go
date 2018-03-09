@@ -16,11 +16,11 @@ const(
 )
 
 type Elevator struct {
-	floor 		int
-	dirn		Dirn
-	requests	[N_FLOORS][N_FLOORS]int
-	behaviour 	ElevatorBehaviour
-	doorOpenDuration_s float64
+	Floor 		int
+	Direction	Dirn
+	Requests	[N_FLOORS][N_FLOORS]int
+	Behaviour 	ElevatorBehaviour
+	DoorOpenDuration_s float64
 }
 
 
@@ -41,9 +41,9 @@ func eb_toString(eb ElevatorBehaviour) string {
 func Elevator_print(es Elevator) {
 	p := fmt.Printf
 	p("  +--------------------+\n")
-	p("  |floor = %-2d          |\n", es.floor)
-	p("  |dirn  = %-12.12s|\n", Elevio_dirn_toString(es.dirn))
-	p("  |behav = %-12.12s|\n", eb_toString(es.behaviour))
+	p("  |floor = %-2d          |\n", es.Floor)
+	p("  |dirn  = %-12.12s|\n", Elevio_dirn_toString(es.Direction))
+	p("  |behav = %-12.12s|\n", eb_toString(es.Behaviour))
     p("  +--------------------+\n")
     p("  |  | dn  | up  | cab |\n")
     for f := N_FLOORS-1; f >= 0; f-- {
@@ -51,7 +51,7 @@ func Elevator_print(es Elevator) {
     	for btn := 0; btn < N_BUTTONS; btn++ {
     		if((f == N_FLOORS-1 && Button(btn) == B_HallUp)  || (f == 0 && Button(btn) == B_HallDown)){
                 p("|     ")
-            } else if es.requests[f][btn] == 1 {
+            } else if es.Requests[f][btn] == 1 {
             	p("|  #  ")
             } else {
             	p("|  -  ")
@@ -66,19 +66,19 @@ func Elevator_print(es Elevator) {
 
 func Elevator_uninitialized() Elevator {
 	e := Elevator {
-		floor: -1,
-		dirn: D_Stop, 
-		behaviour: EB_Idle, 
-		doorOpenDuration_s: 3.0, 
+		Floor: -1,
+		Direction: D_Stop, 
+		Behaviour: EB_Idle, 
+		DoorOpenDuration_s: 3.0, 
 	}
 	return e
 }
 
 /*func main() {
 	test := Elevator_uninitialized()
-	test.dirn = D_Up
-	test.requests[2][1] = 1
-	test.requests[1][2] = 1
+	test.Direction = D_Up
+	test.Requests[2][1] = 1
+	test.Requests[1][2] = 1
 	Elevator_print(test)
 }*/
 
