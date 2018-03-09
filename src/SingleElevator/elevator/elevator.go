@@ -1,4 +1,4 @@
-package main
+package elevator
 
 import (
 	//."SingleElevator/timer" 
@@ -57,11 +57,10 @@ func Elevator_uninitialized() Elevator {
 	return e
 }
 
-func main() {
-	test := Elevator_uninitialized()
+/*	test := Elevator_uninitialized()
 	test.Direction = D_Up
 	test.Requests[2][1] = 1
 	test.Requests[1][2] = 1
 	Elevator_print(test)
-}
+} */
 
