@@ -1,4 +1,4 @@
-package main
+package elevator
 
 import (
 	//."SingleElevator/timer" 
@@ -52,7 +52,7 @@ func Elevator_uninitialized() Elevator {
 		Floor: -1,
 		Direction: D_Stop, 
 		Behaviour: EB_Idle, 
-		DoorOpenDuration_s: 3.0, 
+		DoorOpenDuration_s: DOOROPENDURATION, 
 	}
 	return e
 }

@@ -32,7 +32,7 @@ func requests_below(e Elevator) bool {
 	return false
 }
 
-func requests_chooseDirection(e Elevator) Dirn {
+func Requests_chooseDirection(e Elevator) Dirn {
 	switch e.Direction {
 	case D_Up :
 		if requests_above(e) {
@@ -56,7 +56,7 @@ func requests_chooseDirection(e Elevator) Dirn {
 	return D_Stop
 }
 
-func requests_shouldStop(e Elevator) bool {
+func Requests_shouldStop(e Elevator) bool {
 	switch e.Direction {
 	case D_Down:
 		return e.Requests[e.Floor][B_HallDown] == 1 || e.Requests[e.Floor][B_Cab] == 1 || !requests_below(e)
@@ -69,7 +69,7 @@ func requests_shouldStop(e Elevator) bool {
 	}
 }
 
-func reqests_clearAtCurrentFloor(e Elevator) Elevator {
+func Reqests_clearAtCurrentFloor(e Elevator) Elevator {
 	e.Requests[e.Floor][B_Cab] = 0
 	switch e.Direction {
 	case D_Up:

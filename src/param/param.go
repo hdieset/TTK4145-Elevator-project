@@ -7,6 +7,7 @@ const (
 	N_FLOORS 	= 4
 	N_BUTTONS	= 3
 	PANELPORT 	= "localhost:15657"
+	DOOROPENDURATION = float64(3.0) 
 )
 
 type SyncArray struct {
