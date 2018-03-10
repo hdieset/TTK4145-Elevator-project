@@ -17,12 +17,6 @@ var _mtx sync.Mutex
 var _conn net.Conn
 
 
-type ButtonEvent struct {
-	Floor  int
-	Button ButtonType
-}
-
-
 func Elevio_init(addr string, numFloors int) {
 	if _initialized {
 		fmt.Println("Driver already initialized!")
@@ -120,6 +114,9 @@ func Elevio_pollObstructionSwitch(receiver chan<- bool) {
 	}
 }
 
+func Elevio_getInitialFloor() int {
+	return getFloor()
+}
 
 
 

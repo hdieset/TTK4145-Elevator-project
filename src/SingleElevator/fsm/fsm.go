@@ -4,7 +4,7 @@ import (
 	."SingleElevator/elevator"
 	."SingleElevator/timer"
 	."param"
-	."SingleElevator/elevator_io"
+	."SingleElevator/elevio"
 	."SingleElevator/requests"
 	"fmt"
 )
@@ -16,8 +16,8 @@ var elevator Elevator
 //er en __attribute__((constructor)) som bruker elevator.con osv...
 func Fsm_init() {
 	elevator = Elevator_uninitialized()
-	Elevio_init(PANELPORT,N_FLOORS)
-	Elevio_setStopLamp(false)
+	Elevio_init(Panelport,N_FLOORS)
+	Elevio_setStopLamp(true)
 	Elevio_setDoorOpenLamp(false)
 	//unsure if we should set floor indicator before we know what floor we're on
 	//SetFloorIndicator(0)
@@ -26,10 +26,16 @@ func Fsm_init() {
 func setAllLights(es Elevator) {
 
 	for floor := 0; floor < N_FLOORS; floor++ {
-		for btn := 0; btn < N_FLOORS; btn++ {
-			Elevio_setButtonLamp(btn,floor,es.Requests[floor][btn])
+		for btn := 0; btn < N_BUTTONS; btn++ {
+			Elevio_setButtonLamp(ButtonType(btn),floor,es.Requests[floor][btn])
 		}
 	}
+}
+
+func Fsm_onInitBetweenFloors() {
+	Elevio_setMotorDirection(D_Down)
+	elevator.Direction = D_Down
+	elevator.Behaviour = EB_Moving
 }
 
 func Fsm_onRequestButtonPress(btn_floor int, btn ButtonType) {
@@ -50,20 +56,20 @@ func Fsm_onRequestButtonPress(btn_floor int, btn ButtonType) {
 				elevator.Behaviour = EB_DoorOpen
 			} else {
 				elevator.Requests[btn_floor][btn] = true 
-				elevator.Dirn = Requests_chooseDirection(elevator)
-				Elevio_setMororDirection(elevator.Dirn)
+				elevator.Direction = Requests_chooseDirection(elevator)
+				Elevio_setMotorDirection(elevator.Direction)
 				elevator.Behaviour = EB_Moving
 			} 
 	}
 
 	setAllLights(elevator)
-	fmt.Printf("\nNew state:")
+	fmt.Println("\nNew state:")
 	Elevator_print(elevator)
 
 }
 
 func Fsm_onFloorArrival(newFloor int) {
-	fmt.Println("Arrived at floor ", newFloor)
+	fmt.Println("Arrived at floor", newFloor)
 	Elevator_print(elevator)
 
 	elevator.Floor = newFloor
@@ -81,31 +87,32 @@ func Fsm_onFloorArrival(newFloor int) {
 			elevator.Behaviour = EB_DoorOpen
 		}
 	default:
-		fallthrough
+		// NOP
 	}
 
-	fmt.Println("New state:")
+	fmt.Println("\nNew state:")
 	Elevator_print(elevator)
 }
 
 func Fsm_onDoorTimeout() {
-	fmt.Println("fsm_onDoorTimeout")
+	fmt.Println("Door closed")
 	Elevator_print(elevator)
 
 	switch elevator.Behaviour {
 	case EB_DoorOpen:
 		elevator.Direction = Requests_chooseDirection(elevator)
 		Elevio_setDoorOpenLamp(false)
-		Elevio_SetMotorDirection(elevator.Direction)
+		Elevio_setMotorDirection(elevator.Direction)
+
 		if elevator.Direction == D_Stop {
 			elevator.Behaviour = EB_Idle
 		} else {
 			elevator.Behaviour = EB_Moving
 		}
 	default:
-		fallthrough
+		// NOP
 	}
 
-	fmt.Println("New state:")
+	fmt.Println("\nNew state:")
 	Elevator_print(elevator)
 }

@@ -1,14 +1,17 @@
 package param
 //constants for the elevator project 
 
+var Panelport string = "localhost:15657"
+
 const (
-	PEERPORT 	= 20009
-	BCASTPORT 	= 30009	
-	N_FLOORS 	= 4
-	N_BUTTONS	= 3
-	PANELPORT 	= "localhost:15657"
+	SIMULATOR		 = false
+	PEERPORT 		 = 20009
+	BCASTPORT 		 = 30009	
+	N_FLOORS 		 = 4
+	N_BUTTONS		 = 3
 	DOOROPENDURATION = float64(3.0) 
 )
+
 
 type SyncArray struct {
 	CurrentFloor 	[]int 

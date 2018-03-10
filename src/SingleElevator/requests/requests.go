@@ -1,10 +1,7 @@
 package requests
 
-import (
-	."SingleElevator/elevator"
-	."param"
-	"fmt"
-)
+import ."param"
+
 
 func requests_above(e Elevator) bool {
 	for f := e.Floor + 1; f < N_FLOORS; f++ {
@@ -37,8 +34,10 @@ func Requests_chooseDirection(e Elevator) Dirn {
 			return D_Down
 		} else {
 			return D_Stop
-		}
-	case D_Stop | D_Down:
+		} 
+	case D_Down:
+		fallthrough
+	case D_Stop:
 		if requests_below(e) {
 			return D_Down
 		} else if requests_above(e) {
