@@ -47,7 +47,7 @@ const(
 type Elevator struct {
 	Floor 		int
 	Direction	Dirn
-	Requests	[N_FLOORS][N_BUTTONS]int
+	Requests	[N_FLOORS][N_BUTTONS] bool
 	Behaviour 	ElevatorBehaviour
 	DoorOpenDuration_s float64
 }
