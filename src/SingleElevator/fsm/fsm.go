@@ -1,10 +1,8 @@
 package fsm 
 
 import (
-	//"SingleElevator/elevator_io_types"
-	//"SingleElevator/elevator"
+	."SingleElevator/elevator"
 	."SingleElevator/timer"
-	//"SingleElevator/elevator_io.go"
 	."param"
 	."SingleElevator/elevator_io"
 	."SingleElevator/requests"
@@ -19,6 +17,10 @@ var elevator Elevator
 func Fsm_init() {
 	elevator = Elevator_uninitialized()
 	elevio.Init(PANELPORT,N_FLOORS)
+	SetStopLamp(false)
+	SetDoorOpenLamp(false)
+	//unsure if we should set floor indicator before we know what floor we're on
+	//SetFloorIndicator(0)
 }
 
 func setAllLights(es Elevator) {

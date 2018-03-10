@@ -2,12 +2,8 @@ package requests
 
 import (
 	."SingleElevator/elevator"
-	."SingleElevator/elevator_io_types"
+	."param"
 	"fmt"
-)
-
-const ( // Some constans that should not be decleared here.
-	DoorOpenDuration_s = 5
 )
 
 func requests_above(e Elevator) bool {
