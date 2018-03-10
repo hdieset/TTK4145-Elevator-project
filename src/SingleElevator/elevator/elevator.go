@@ -34,7 +34,7 @@ func Elevator_print(es Elevator) {
     	for btn := 0; btn < N_BUTTONS; btn++ {
     		if((f == N_FLOORS-1 && ButtonType(btn) == B_HallUp)  || (f == 0 && ButtonType(btn) == B_HallDown)){
                 p("|     ")
-            } else if es.Requests[f][btn] == 1 {
+            } else if es.Requests[f][btn] {
             	p("|  #  ")
             } else {
             	p("|  -  ")
