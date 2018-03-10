@@ -60,4 +60,50 @@ func Fsm_onRequestButtonPress(btn_floor int, btn ButtonType) {
 
 }
 
+func Fsm_onFloorArrival(newFloor int) {
+	fmt.Println("Arrived at floor ", newFloor)
+	Elevator_print(elevator)
 
+	elevator.Floor = newFloor
+
+	SetFloorIndicator(elevator.Floor)
+
+	switch elevator.Behaviour {
+	case EB_Moving:
+		if Requests_shouldStop(elevator) {
+			SetMotorDirection(D_Stop)
+			SetDoorOpenLamp(true)
+			elevator = Reqests_clearAtCurrentFloor(elevator)
+			Timer_start(elevator.DoorOpenDuration_s)
+			setAllLights(elevator)
+			elevator.Behaviour = EB_DoorOpen
+		}
+	default:
+		fallthrough
+	}
+
+	fmt.Println("New state:")
+	Elevator_print(elevator)
+}
+
+func Fsm_onDoorTimeout() {
+	fmt.Println("fsm_onDoorTimeout")
+	Elevator_print(elevator)
+
+	switch elevator.Behaviour {
+	case EB_DoorOpen:
+		elevator.Direction = Requests_chooseDirection(elevator)
+		SetDoorOpenLamp(false)
+		SetMotorDirection(elevator.Direction)
+		if elevator.Direction == D_Stop {
+			elevator.Behaviour = EB_Idle
+		} else {
+			elevator.Behaviour = EB_Moving
+		}
+	default:
+		fallthrough
+	}
+
+	fmt.Println("New state:")
+	Elevator_print(elevator)
+}
