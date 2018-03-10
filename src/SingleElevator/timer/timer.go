@@ -26,7 +26,16 @@ func Timer_stop() {
 }
 
 
-func Timer_timedOut() bool {
-	return (timerActive && get_wall_time() > timerEndTime)
+func Timer_timedOut(timedOut chan<- bool) {
+	for {
+		if timerActive && (get_wall_time() > timerEndTime) {
+			timedOut <- true 
+		}
+	}
 }
 
+
+//gammel versjon: 
+/*func Timer_timedOut() bool {
+	return (timerActive && get_wall_time() > timerEndTime)
+}*/
