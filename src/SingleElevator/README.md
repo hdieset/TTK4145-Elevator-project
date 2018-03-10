@@ -1,16 +1,16 @@
 ## Implemented functions
 - [ ] con_load.h
-- [ ] copy_driver.sh
+- [x] copy_driver.sh
 - [x] elevator.c
-- [ ] elevator.con
+- [x] elevator.con
 - [x] elevator.h
-- [ ] elevator_io_device.c
-- [ ] elevator_io_device.h
-- [ ] elevator_io_types.h
-- [ ] fsm.c
-- [ ] fsm.h
+- [x] elevator_io_device.c
+- [x] elevator_io_device.h
+- [x] elevator_io_types.h
+- [x] fsm.c
+- [x] fsm.h
 - [ ] main.c
-- [ ] requests.c
-- [ ] requests.h
+- [x] requests.c
+- [x] requests.h
 - [x] timer.c
 - [x] timer.h
