@@ -1,4 +1,4 @@
-package elevator
+package main
 
 import (
 	//."SingleElevator/timer" 
@@ -28,7 +28,7 @@ func Elevator_print(es Elevator) {
 	p("  |dirn  = %-12.12s|\n", Elevio_dirn_toString(es.Direction))
 	p("  |behav = %-12.12s|\n", eb_toString(es.Behaviour))
     p("  +--------------------+\n")
-    p("  |  | dn  | up  | cab |\n")
+    p("  |  | up  | dn  | cab |\n")
     for f := N_FLOORS-1; f >= 0; f-- {
     	p("  | %d", f)
     	for btn := 0; btn < N_BUTTONS; btn++ {
@@ -57,10 +57,12 @@ func Elevator_uninitialized() Elevator {
 	return e
 }
 
-/*	test := Elevator_uninitialized()
+
+	/* func main() {
+	test := Elevator_uninitialized()
 	test.Direction = D_Up
 	test.Requests[2][1] = 1
 	test.Requests[1][2] = 1
 	Elevator_print(test)
-} */
+	} */ 
 

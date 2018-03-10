@@ -27,8 +27,8 @@ const (
 
 type ButtonType int 
 const (
-	B_HallDown  = ButtonType(0)
-	B_HallUp 	= ButtonType(1)
+	B_HallUp 	= ButtonType(0)
+	B_HallDown  = ButtonType(1)
 	B_Cab 		= ButtonType(2)
 )
 
