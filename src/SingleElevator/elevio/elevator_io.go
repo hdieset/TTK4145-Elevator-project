@@ -23,7 +23,7 @@ type ButtonEvent struct {
 }
 
 
-func Init(addr string, numFloors int) {
+func Elevio_init(addr string, numFloors int) {
 	if _initialized {
 		fmt.Println("Driver already initialized!")
 		return
@@ -38,37 +38,37 @@ func Init(addr string, numFloors int) {
 	_initialized = true
 }
 
-func SetMotorDirection(dir Dirn) {
+func Elevio_setMotorDirection(dir Dirn) {
 	_mtx.Lock()
 	defer _mtx.Unlock()
 	_conn.Write([]byte{1, byte(dir), 0, 0})
 }
 
-func SetButtonLamp(button ButtonType, floor int, value bool) {
+func Elevio_setButtonLamp(button ButtonType, floor int, value bool) {
 	_mtx.Lock()
 	defer _mtx.Unlock()
 	_conn.Write([]byte{2, byte(button), byte(floor), toByte(value)})
 }
 
-func SetFloorIndicator(floor int) {
+func Elevio_setFloorIndicator(floor int) {
 	_mtx.Lock()
 	defer _mtx.Unlock()
 	_conn.Write([]byte{3, byte(floor), 0, 0})
 }
 
-func SetDoorOpenLamp(value bool) {
+func Elevio_setDoorOpenLamp(value bool) {
 	_mtx.Lock()
 	defer _mtx.Unlock()
 	_conn.Write([]byte{4, toByte(value), 0, 0})
 }
 
-func SetStopLamp(value bool) {
+func Elevio_setStopLamp(value bool) {
 	_mtx.Lock()
 	defer _mtx.Unlock()
 	_conn.Write([]byte{5, toByte(value), 0, 0})
 }
 
-func PollButtons(receiver chan<- ButtonEvent) {
+func Elevio_pollButtons(receiver chan<- ButtonEvent) {
 	prev := make([][3]bool, _numFloors)
 	for {
 		time.Sleep(_pollRate)
@@ -84,7 +84,7 @@ func PollButtons(receiver chan<- ButtonEvent) {
 	}
 }
 
-func PollFloorSensor(receiver chan<- int) {
+func Elevio_pollFloorSensor(receiver chan<- int) {
 	prev := -1
 	for {
 		time.Sleep(_pollRate)
@@ -96,7 +96,7 @@ func PollFloorSensor(receiver chan<- int) {
 	}
 }
 
-func PollStopButton(receiver chan<- bool) {
+func Elevio_pollStopButton(receiver chan<- bool) {
 	prev := false
 	for {
 		time.Sleep(_pollRate)
@@ -108,7 +108,7 @@ func PollStopButton(receiver chan<- bool) {
 	}
 }
 
-func PollObstructionSwitch(receiver chan<- bool) {
+func Elevio_pollObstructionSwitch(receiver chan<- bool) {
 	prev := false
 	for {
 		time.Sleep(_pollRate)
