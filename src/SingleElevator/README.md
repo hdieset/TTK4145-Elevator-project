@@ -1,5 +1,5 @@
 ## Implemented functions
-- [ ] con_load.h
+- [x] con_load.h
 - [x] copy_driver.sh
 - [x] elevator.c
 - [x] elevator.con
@@ -9,7 +9,7 @@
 - [x] elevator_io_types.h
 - [x] fsm.c
 - [x] fsm.h
-- [ ] main.c
+- [x] main.c
 - [x] requests.c
 - [x] requests.h
 - [x] timer.c
