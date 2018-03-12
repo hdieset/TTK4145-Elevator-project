@@ -64,32 +64,24 @@ func Requests_shouldStop(e Elevator) bool {
 	}
 }
 
-func Requests_clearAtCurrentFloor(e Elevator) Elevator {
-	e.CompletedReq[e.Floor][B_Cab] = true 
+func Reqests_clearAtCurrentFloor(e Elevator) Elevator {
 	e.Requests[e.Floor][B_Cab] = false
-
 	switch e.Direction {
 	case D_Up:
 		e.Requests[e.Floor][B_HallUp] = false
-		e.CompletedReq[e.Floor][B_HallUp] = true 
 		if !requests_above(e) {
 			e.Requests[e.Floor][B_HallDown] = false
-			e.CompletedReq[e.Floor][B_HallDown] = true
 		}
 	case D_Down:
 		e.Requests[e.Floor][B_HallDown] = false
-		e.CompletedReq[e.Floor][B_HallDown] = true
 		if !requests_below(e) {
 			e.Requests[e.Floor][B_HallUp] = false
-			e.CompletedReq[e.Floor][B_HallUp] = true
 		}
 	case D_Stop:
 		fallthrough
 	default:
 		e.Requests[e.Floor][B_HallUp] = false
 		e.Requests[e.Floor][B_HallDown] = false
-		e.CompletedReq[e.Floor][B_HallUp] = true
-		e.CompletedReq[e.Floor][B_HallDown] = true
 	}
 	return e
 }

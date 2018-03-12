@@ -1,4 +1,4 @@
-package SingleElevator
+package main
 import (
 	."SingleElevator/fsm"
 	"fmt"
@@ -9,8 +9,7 @@ import (
 )
 
 
-func SingleElevator(syncLocalElevator chan<- Elevator, 
-	syncButtonPress chan<- ButtonEvent, receiveAssignedOrders <-chan AssignedOrders) {
+func main() {
 
 	if SIMULATOR {
 		ExtPrc_changeElevatorSimPort()
@@ -47,13 +46,11 @@ func SingleElevator(syncLocalElevator chan<- Elevator,
 	for {
 		select {
 		case buttonPress := <- drv_buttons: 
-			syncButtonPress <- buttonPress
-		case newOrderlist := <- receiveAssignedOrders
-			Fsm_ReceivedNewOrderList(newOrderlist, syncLocalElevator)
+			Fsm_onRequestButtonPress(buttonPress.Floor, buttonPress.Button)
 		case arrivedAtFloor := <- drv_floors: 
-			Fsm_onFloorArrival(arrivedAtFloor, syncLocalElevator)
+			Fsm_onFloorArrival(arrivedAtFloor)
 		case <- doorTimedOut:
-			Fsm_onDoorTimeout(syncLocalElevator) 
+			Fsm_onDoorTimeout() 
 			Timer_stop() 
 		case <- drv_stop:
 			Elevio_setStopLamp(false)

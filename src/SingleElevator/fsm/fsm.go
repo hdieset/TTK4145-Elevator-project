@@ -23,52 +23,75 @@ func Fsm_init() {
 	//SetFloorIndicator(0)
 }
 
-func setAllLights(es Elevator) {
-
-	for floor := 0; floor < N_FLOORS; floor++ {
-		for btn := 0; btn < N_BUTTONS; btn++ {
-			Elevio_setButtonLamp(ButtonType(btn),floor,es.Requests[floor][btn])
-		}
-	}
-}
-
 func Fsm_onInitBetweenFloors() {
 	Elevio_setMotorDirection(D_Down)
 	elevator.Direction = D_Down
 	elevator.Behaviour = EB_Moving
 }
 
-func Fsm_onRequestButtonPress(btn_floor int, btn ButtonType) {
+func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<- Elevator) {
+	//declare flag for special cases
+	var idleAtFloor bool = false
+	var doorOpenAtFloor bool = false 
 
-	switch elevator.Behaviour {
-		case EB_DoorOpen: 
-			if elevator.Floor == btn_floor {
-				Timer_start(elevator.DoorOpenDuration_s) 
-			} else {
-				elevator.Requests[btn_floor][btn] = true
+	//clear old elevator.Requests
+	var emptyOrderList [N_FLOORS][N_BUTTONS]
+	elevator.Requests = emptyOrderList
+
+	//add new orders to elevator.Requests 
+	for floors := 0; floors < N_FLOORS; floors++ {
+		for buttons := 0; buttons < N_BUTTONS; buttons++ {
+			if newOrders.Local[floors][buttons] {
+
+				switch elevator.Behaviour {
+				case EB_DoorOpen: 
+					if elevator.Floor == newOrders.Local[floors][buttons] {
+						doorOpenAtFloor = true 
+						elevator.completedReq[floors][buttons] = true 
+					} else {
+						elevator.Requests[floors][buttons] = true
+					}
+	
+				case EB_Moving:
+					elevator.Requests[floors][buttons] = true 
+
+				case EB_Idle:
+					if elevator.Floor == btn_floor {
+						idleAtFloor = true
+						elevator.completedReq[floors][buttons] = true
+					} else {
+						elevator.Requests[floors][buttons] = true
+					}	
+				}
 			}
-		case EB_Moving:
-			elevator.Requests[btn_floor][btn] = true 
-		case EB_Idle:
-			if elevator.Floor == btn_floor {
-				Elevio_setDoorOpenLamp(true)
-				Timer_start(elevator.DoorOpenDuration_s)
-				elevator.Behaviour = EB_DoorOpen
-			} else {
-				elevator.Requests[btn_floor][btn] = true 
-				elevator.Direction = Requests_chooseDirection(elevator)
-				Elevio_setMotorDirection(elevator.Direction)
-				elevator.Behaviour = EB_Moving
-			} 
+		}
 	}
 
-	setAllLights(elevator)
+	if doorOpenAtFloor {
+		Timer_start(elevator.DoorOpenDuration_s) 
+	} 
+
+	if idleAtFloor {
+		Elevio_setDoorOpenLamp(true)
+		Timer_start(elevator.DoorOpenDuration_s)
+		elevator.Behaviour = EB_DoorOpen
+	} else {
+		elevator.Direction = Requests_chooseDirection(elevator)
+		Elevio_setMotorDirection(elevator.Direction)
+		elevator.Behaviour = EB_Moving
+	}
+
+	setAllHallLights(newOrders)
+	setAllCabLights()
 	fmt.Println("\nNew state:")
 	Elevator_print(elevator)
-
+	sendLocalElevator(syncLocalElevator)
 }
 
-func Fsm_onFloorArrival(newFloor int) {
+
+
+
+func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 	fmt.Println("Arrived at floor", newFloor)
 	Elevator_print(elevator)
 
@@ -81,20 +104,22 @@ func Fsm_onFloorArrival(newFloor int) {
 		if Requests_shouldStop(elevator) {
 			Elevio_setMotorDirection(D_Stop)
 			Elevio_setDoorOpenLamp(true)
-			elevator = Reqests_clearAtCurrentFloor(elevator)
+			elevator = Requests_clearAtCurrentFloor(elevator)
 			Timer_start(elevator.DoorOpenDuration_s)
-			setAllLights(elevator)
+			//setAllLights(elevator)
 			elevator.Behaviour = EB_DoorOpen
 		}
 	default:
 		// NOP
 	}
 
-	fmt.Println("\nNew state:")
-	Elevator_print(elevator)
+	/*fmt.Println("\nNew state:")
+	Elevator_print(elevator)*/ 
+	sendLocalElevator(syncLocalElevator)
+
 }
 
-func Fsm_onDoorTimeout() {
+func Fsm_onDoorTimeout(syncLocalElevator chan<- Elevator) {
 	fmt.Println("Door closed")
 	Elevator_print(elevator)
 
@@ -113,6 +138,31 @@ func Fsm_onDoorTimeout() {
 		// NOP
 	}
 
-	fmt.Println("\nNew state:")
-	Elevator_print(elevator)
+	/*fmt.Println("\nNew state:")
+	Elevator_print(elevator)*/ 
+	sendLocalElevator(syncLocalElevator)
+}
+
+
+
+
+func setAllHallLights(newOrders AssignedOrders) {
+	for floor := 0; floor < N_FLOORS; floor++ {
+		for btn := 0; btn < N_BUTTONS-1; btn++ {
+			Elevio_setButtonLamp(ButtonType(btn),floor,newOrders.GlobalHallReq[floor][btn])
+		}
+	}
+}
+
+func setAllCabLights() {
+	for floor := 0; floor < N_FLOORS;floor++ {
+		Elevio_setButtonLamp(B_Cab,floor,elevator.Requests[floor][B_Cab])
+	}
+}
+
+func sendLocalElevator(syncLocalElevator chan<- Elevator) {
+	syncLocalElevator <- elevator 
+	//clear old elevator.CompletedReq
+	var emptyOrderList [N_FLOORS][N_BUTTONS]
+	elevator.CompletedReq = emptyOrderList
 }

@@ -4,7 +4,7 @@ package param
 var Panelport string = "localhost:15657"
 
 const (
-	SIMULATOR		 = false
+	SIMULATOR		 = true
 	PEERPORT 		 = 20009
 	BCASTPORT 		 = 30009	
 	N_FLOORS 		 = 4
@@ -52,9 +52,17 @@ type Elevator struct {
 	Floor 		int
 	Direction	Dirn
 	Requests	[N_FLOORS][N_BUTTONS] bool
+	CompletedReq[N_FLOORS][N_BUTTONS] bool
 	Behaviour 	ElevatorBehaviour
 	DoorOpenDuration_s float64
 }
+
+type AssignedOrders struct {
+	GlobalHallReq [N_FLOORS][N_BUTTONS-1] bool
+	Local 		  [N_FLOORS][N_BUTTONS] bool
+}
+
+
 
 /*	
 -IP-adresses	
