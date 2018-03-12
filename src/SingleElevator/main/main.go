@@ -1,16 +1,16 @@
-package SingleElevator
+package main 
+
+//test main for SingleElevator 
 import (
-	."SingleElevator/fsm"
+	."SingleElevator/SingleElevatorMain"
 	"fmt"
 	."param"
-	."SingleElevator/elevio"
-	."SingleElevator/timer"
+	."SingleElevator/elevator"
 	."SingleElevator/extPrc"
+	."Cost"
 )
 
-
-func SingleElevator(syncLocalElevator chan<- Elevator, 
-	syncButtonPress chan<- ButtonEvent, receiveAssignedOrders <-chan AssignedOrders) {
+func main() {
 
 	if SIMULATOR {
 		ExtPrc_changeElevatorSimPort()
@@ -18,50 +18,29 @@ func SingleElevator(syncLocalElevator chan<- Elevator,
 		ExtPrc_initElevatorServer()
 	}
 
- 	//initializing fmt, driverconnection and panellights
- 	Fsm_init() 
+	syncLocalElevator := make(chan Elevator)
+	syncButtonPress := make(chan ButtonEvent)
+	sendAssignedOrders := make(chan AssignedOrders)
+	stopButtonPressed := make(chan bool)
 
- 	//setting up driver channels 
- 	drv_buttons  := make(chan ButtonEvent)
- 	drv_floors 	 := make(chan int)
- 	doorTimedOut := make(chan bool)
- 	drv_stop	 := make(chan bool) 
-
- 	//don't need this one yet 
- 	//drv_obstr 	 := make(chan bool)
-
- 	//staring driver polling as go routines with adhering channels 
- 	go Elevio_pollButtons(drv_buttons)
- 	go Elevio_pollFloorSensor(drv_floors)
-	go Timer_timedOut(doorTimedOut)
-	go Elevio_pollStopButton(drv_stop)
-
- 	//go Elevio_pollObstruction(drv_obstr)
- 	
-	fmt.Println("Started!")
-
-	if Elevio_getInitialFloor() == -1 {
-		Fsm_onInitBetweenFloors()
-	}
+	go SingleElevator(syncLocalElevator, syncButtonPress, sendAssignedOrders, stopButtonPressed)
+	go Cost(sendAssignedOrders)
 
 	for {
 		select {
-		case buttonPress := <- drv_buttons: 
-			syncButtonPress <- buttonPress
-		case newOrderlist := <- receiveAssignedOrders
-			Fsm_ReceivedNewOrderList(newOrderlist, syncLocalElevator)
-		case arrivedAtFloor := <- drv_floors: 
-			Fsm_onFloorArrival(arrivedAtFloor, syncLocalElevator)
-		case <- doorTimedOut:
-			Fsm_onDoorTimeout(syncLocalElevator) 
-			Timer_stop() 
-		case <- drv_stop:
-			Elevio_setStopLamp(false)
-			fmt.Println("Elevator died peacefully")
+		case receivedElev := <- syncLocalElevator: 
+			fmt.Println("Received elevator object")
+			Elevator_print(receivedElev)
+			fmt.Println(receivedElev.CompletedReq)
+
+		case newButtonPress:= <- syncButtonPress:
+			fmt.Println("New button push at floor: ", newButtonPress.Floor)
+			fmt.Println("And button type (Up =0, Dwn = 1, Cab =2): ", newButtonPress.Button)
+
+		case <- stopButtonPressed:
 			return
 		}
 	}
-
 	if !SIMULATOR {
 		ExtPrc_exitElevatorServer()
 	}

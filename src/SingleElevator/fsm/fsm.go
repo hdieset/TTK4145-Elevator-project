@@ -35,32 +35,32 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 	var doorOpenAtFloor bool = false 
 
 	//clear old elevator.Requests
-	var emptyOrderList [N_FLOORS][N_BUTTONS]
+	var emptyOrderList [N_FLOORS][N_BUTTONS] bool
 	elevator.Requests = emptyOrderList
 
 	//add new orders to elevator.Requests 
-	for floors := 0; floors < N_FLOORS; floors++ {
+	for floor := 0; floor < N_FLOORS; floor++ {
 		for buttons := 0; buttons < N_BUTTONS; buttons++ {
-			if newOrders.Local[floors][buttons] {
+			if newOrders.Local[floor][buttons] {
 
 				switch elevator.Behaviour {
 				case EB_DoorOpen: 
-					if elevator.Floor == newOrders.Local[floors][buttons] {
+					if elevator.Floor == floor {
 						doorOpenAtFloor = true 
-						elevator.completedReq[floors][buttons] = true 
+						elevator.CompletedReq[floor][buttons] = true 
 					} else {
-						elevator.Requests[floors][buttons] = true
+						elevator.Requests[floor][buttons] = true
 					}
 	
 				case EB_Moving:
-					elevator.Requests[floors][buttons] = true 
+					elevator.Requests[floor][buttons] = true 
 
 				case EB_Idle:
-					if elevator.Floor == btn_floor {
+					if elevator.Floor == floor {
 						idleAtFloor = true
-						elevator.completedReq[floors][buttons] = true
+						elevator.CompletedReq[floor][buttons] = true
 					} else {
-						elevator.Requests[floors][buttons] = true
+						elevator.Requests[floor][buttons] = true
 					}	
 				}
 			}
@@ -163,6 +163,6 @@ func setAllCabLights() {
 func sendLocalElevator(syncLocalElevator chan<- Elevator) {
 	syncLocalElevator <- elevator 
 	//clear old elevator.CompletedReq
-	var emptyOrderList [N_FLOORS][N_BUTTONS]
+	var emptyOrderList [N_FLOORS][N_BUTTONS] bool
 	elevator.CompletedReq = emptyOrderList
 }

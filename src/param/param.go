@@ -4,7 +4,7 @@ package param
 var Panelport string = "localhost:15657"
 
 const (
-	SIMULATOR		 = true
+	SIMULATOR		 = false
 	PEERPORT 		 = 20009
 	BCASTPORT 		 = 30009	
 	N_FLOORS 		 = 4
@@ -20,6 +20,12 @@ type SyncArray struct {
 	MyID 			string
 	Suicide			bool
 	Iter 			int
+}
+
+type PeerUpdate struct {
+	Peers []string
+	New   string
+	Lost  []string
 }
 
 type Dirn int 
@@ -49,11 +55,11 @@ const(
 )
 
 type Elevator struct {
-	Floor 		int
-	Direction	Dirn
-	Requests	[N_FLOORS][N_BUTTONS] bool
-	CompletedReq[N_FLOORS][N_BUTTONS] bool
-	Behaviour 	ElevatorBehaviour
+	Floor 		 int
+	Direction	 Dirn
+	Requests	 [N_FLOORS][N_BUTTONS] bool
+	CompletedReq [N_FLOORS][N_BUTTONS] bool
+	Behaviour 	 ElevatorBehaviour
 	DoorOpenDuration_s float64
 }
 
