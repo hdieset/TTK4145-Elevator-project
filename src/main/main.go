@@ -29,13 +29,12 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	// Initializing network goroutine
 	id := generateId()
-	fmt.Println("Elevator id: ",id)
+	fmt.Println("Elevator id: ",id) //rename når vi har tid ? (LocalElevatorID)
 	//make relevant channels 
 	peerUpdateCh := make(chan peers.PeerUpdate)
 	peerTxEnable := make(chan bool) //redundant? 
-	networkTx := make(chan SyncArray)
-	networkRx := make(chan SyncArray)
-
+	networkTx 	 := make(chan SyncArray)
+	networkRx    := make(chan SyncArray)
 
 
 	//init go routines 
@@ -57,13 +56,13 @@ func main() {
 
 	for {
 		select {
-		case p := <-peerUpdateCh:
+		case p := <-peerUpdateCh: // Skal til Sync
 			fmt.Printf("Peer update:\n")
 			fmt.Printf("  Peers:    %q\n", p.Peers)
 			fmt.Printf("  New:      %q\n", p.New)
 			fmt.Printf("  Lost:     %q\n", p.Lost)
 
-		case a := <-networkRx:
+		case a := <-networkRx: // Skal til sync
 			fmt.Printf("Received: %#v\n", a.Iter)
 		}
 	}
@@ -95,4 +94,4 @@ func generateId()(id string) {
 //source .bashrc <- lagrer
 // echo $GOPATH <- viser gopath
 //GOPATH=$HOME/gruppeOgPlass9/project-gruppe-9/ <- kjøres i terminal.
-// for å vise gopath: go env
+// for å vise gopath: go envz

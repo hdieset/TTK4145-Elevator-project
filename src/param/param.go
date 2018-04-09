@@ -13,14 +13,22 @@ const (
 )
 
 
+
+type HallReqStates int 
+const (
+	Hall_unknown 		= HallReqStates(-1)
+	Hall_none 			= HallReqStates(0)
+	Hall_unconfirmed 	= HallReqStates(1) 
+	Hall_confirmed 		= HallReqStates(2) 
+)
+
+
 type SyncArray struct {
-	CurrentFloor 	[]int 
-	Melding 		string
-	ErDetFredag 	bool
-	MyID 			string
-	Suicide			bool
-	Iter 			int
+	AllElevators 	map[string]Elevator
+	HallStates 		[N_FLOORS][N_BUTTONS-1]HallReqStates
+	Owner			string
 }
+
 
 type PeerUpdate struct {
 	Peers []string
@@ -64,8 +72,8 @@ type Elevator struct {
 }
 
 type AssignedOrders struct {
-	GlobalHallReq [N_FLOORS][N_BUTTONS-1] bool
-	Local 		  [N_FLOORS][N_BUTTONS] bool
+	GlobalHallReq [N_FLOORS][N_BUTTONS-1] 	bool
+	Local 		  [N_FLOORS][N_BUTTONS] 	bool
 }
 
 
