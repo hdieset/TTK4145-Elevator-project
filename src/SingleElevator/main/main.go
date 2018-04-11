@@ -25,10 +25,11 @@ func main() {
 	sendSyncArray		:= make(chan SyncArray)
 
 	//ID FØR DETTE, placeholder: 
-	*/var LocalElevatorID string 
+	var LocalElevatorID string 
 	LocalElevatorID = "penis"
 
-	localSyncArray := new(SyncArray)
+	var localSyncArray SyncArray
+	//localSyncArray := new(SyncArray)  - gammel versjon førte til at vi måtte sende peker 
 	localSyncArray.AllElevators = make(map[string]Elevator)	
 
 	// Creating a test localSyncArray
@@ -46,13 +47,13 @@ func main() {
 	fitteheis.Floor = 0
 	fitteheis.Direction = D_Stop
 	//fitteheis.Requests[3][B_Cab] = true
-	localSyncArray.AllElevators["fitte"] = fitteheis/*
+	localSyncArray.AllElevators["fitte"] = fitteheis
 
 
 	go SingleElevator(syncLocalElevator, syncButtonPress, sendAssignedOrders, stopButtonPressed)
 	go Cost(sendAssignedOrders, sendSyncArray, LocalElevatorID)
 
-	sendSyncArray <- *localSyncArray //STUDASS?????????????????????????????????????????????????????
+	sendSyncArray <- localSyncArray //her måtte vi sende en peker. 
 
 	for {
 		select {
