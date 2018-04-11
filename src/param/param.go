@@ -26,6 +26,7 @@ const (
 type SyncArray struct {
 	AllElevators 	map[string]Elevator
 	HallStates 		[N_FLOORS][N_BUTTONS-1]HallReqStates
+	AckHallStates	map[string][N_FLOORS][N_BUTTONS-1]bool
 	Owner			string
 }
 

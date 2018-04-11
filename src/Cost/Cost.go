@@ -19,7 +19,7 @@ type assignerCompatibleInput struct {
     States       map[string]assignerCompatibleElev `json:"states"`
 }
 
-
+N_ELEVATORS
 func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan SyncArray, LocalElevatorID string){
     const dir string = "$GOPATH" + "/src/Cost"
     var newOrderList AssignedOrders 
