@@ -8,22 +8,32 @@ import (
 func SyncModule (localElevatorID string, 
 		peerUpdateCh <-chan PeerUpdate,
 		networkRx <-chan SyncArray,
-		netWorkTx chan<- SyncArray,
+		networkTx chan<- SyncArray,
 		sendSyncArrayToCost chan<- SyncArray,
 		receivedLocalElevator <-chan Elevator, 
 		receivedButtonPress <-chan ButtonEvent) {
 	
 	var isAlone bool
-
 	localSyncArray := initLocalSyncArray(localElevatorID)
 	
+
 	for {
 		select { 
 		case newPeerList <- peerUpdateCh:
 			// Deleting lost Elevators from local sync array
+			//fjerne alle ackd fra LocalSyncArray hvis peer er lost
+
 			for lostElevators := 0; lostElevators < len(newPeerList.Lost); lostElevators++ {
 				delete(localSyncArray.AllElevators, newPeerList.Lost[lostElevators] )
+				//delete acks from disconnected elevators
+				for floors := 0; floors < N_FLOORS; floors++ {
+					for btn := 0; btn < N_BUTTONS-1; btn++ {
+						delete(localSyncArray.AckHallStates[floors][btn], newPeerList.Lost[lostElevators])
+					}
+				}
 			}
+
+
 
 			//REDUNDANT????????????????????????????????????????
 			// Set flag if this elevator is disconnected from all others
@@ -41,7 +51,7 @@ func SyncModule (localElevatorID string,
 			//Update/overwrite the sender's elevator struct in localSyncArray 
 			localSyncArray.AllElevators[recievedSyncArray.Owner] = recievedSyncArray.AllElevators[recievedSyncArray.Owner]
 			//KJØRE updateHallStates(recievedSyncArray, localSyncArray, localElevatorID) 
-			netWorkTx <- localSyncArray
+			networkTx <- localSyncArray
 			sendSyncArrayToCost <- localSyncArray 
 
 		case updatedLocalElev <- receivedLocalElevator: 
@@ -61,7 +71,7 @@ func SyncModule (localElevatorID string,
 				}
 			}
 
-			netWorkTx <- localSyncArray
+			networkTx <- localSyncArray
 			sendSyncArrayToCost <- localSyncArray
 
 		case newBtnEvent <- receivedButtonPress: 
@@ -72,7 +82,7 @@ func SyncModule (localElevatorID string,
 				//SUPERFUNKSJONALITET (bump hall tingen)
 			} 
 
-			netWorkTx <- localSyncArray
+			networkTx <- localSyncArray
 			sendSyncArrayToCost <- localSyncArray
 		}
 	}
@@ -81,13 +91,14 @@ func SyncModule (localElevatorID string,
 func initLocalSyncArray(localElevatorID string) SyncArray {
 	localSyncArray := new(SyncArray)
 	localSyncArray.AllElevators = make(map[string]Elevator)
-	localSyncArray.AckHallStates = make(map[string][N_FLOORS][N_BUTTONS-1]bool)
+	//localSyncArray.AckHallStates = make(map[string][N_FLOORS][N_BUTTONS-1]bool)
 	localSyncArray.Owner = localElevatorID	
 
 	//set all hall states to unknown in case of reboot
 	for floors := 0; floors < N_FLOORS; floors++ {
 		for btn := 0; btn < N_BUTTONS-1; btn++ {
 			localSyncArray.HallStates[floors][btn] = Hall_unknown
+			localSyncArray.AckHallStates[floors][btn] = make(map[string]bool) 
 		}
 	}
 
@@ -96,6 +107,24 @@ func initLocalSyncArray(localElevatorID string) SyncArray {
 
 func updateHallStates(recievedSyncArray SyncArray, localSyncArray SyncArray, localElevatorID string) SyncArray {
 	//hvis lengden av peerlist == 1, ikke ack fordi vi ikke vil at en enslig elevator skal ta hall orders
+	if len(localSyncArray.AllElevators) > 1 {
+		if recievedSyncArray.HallStates != localSyncArray.HallStates {
+			for floors := 0; floors < N_FLOORS; floors++ {
+				for btn := 0; btn < N_BUTTONS-1; btn++ {
+					switch recievedSyncArray.HallStates[floors][btn] {
+					case Hall_unknown: 
+						fallthrough
+					case Hall_none: 
+						if localSyncArray.HallStates[floors][btn] == Hall_confirmed {
+							localSyncArray.HallStates[floors][btn] == Hall_none
+							//Delete entire Ack list for that floor and button
+						    localSyncArray.AckHallStates[floors][btn] = make(map[string]bool)
+						}
+					}
+				}
+			}
+		}
+	}
 
 }
 

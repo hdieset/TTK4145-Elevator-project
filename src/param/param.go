@@ -26,7 +26,7 @@ const (
 type SyncArray struct {
 	AllElevators 	map[string]Elevator
 	HallStates 		[N_FLOORS][N_BUTTONS-1]HallReqStates
-	AckHallStates	map[string][N_FLOORS][N_BUTTONS-1]bool
+	AckHallStates	[N_FLOORS][N_BUTTONS-1]map[string]bool
 	Owner			string
 }
 
@@ -73,8 +73,8 @@ type Elevator struct {
 }
 
 type AssignedOrders struct {
-	GlobalHallReq [N_FLOORS][N_BUTTONS-1] 	bool
-	Local 		  [N_FLOORS][N_BUTTONS] 	bool
+	GlobalHallReq [N_FLOORS][N_BUTTONS-1]bool
+	Local 		  [N_FLOORS][N_BUTTONS]bool
 }
 
 
