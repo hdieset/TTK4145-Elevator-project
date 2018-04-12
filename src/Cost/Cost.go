@@ -19,7 +19,7 @@ type assignerCompatibleInput struct {
     States       map[string]assignerCompatibleElev `json:"states"`
 }
 
-N_ELEVATORS
+
 func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan SyncArray, LocalElevatorID string){
     const dir string = "$GOPATH" + "/src/Cost"
     var newOrderList AssignedOrders 
@@ -93,7 +93,7 @@ func elevatorToAssignerConverter (inputElevator Elevator) assignerCompatibleElev
 }
 
 func syncArrayToAssignerConverter (inputSyncArray SyncArray) assignerCompatibleInput {
-    convertedSyncArray := new(assignerCompatibleInput)
+    convertedSyncArray := assignerCompatibleInput{}
     convertedSyncArray.States = make(map[string]assignerCompatibleElev)
 
     for elevIdIter := range inputSyncArray.AllElevators {
@@ -110,5 +110,5 @@ func syncArrayToAssignerConverter (inputSyncArray SyncArray) assignerCompatibleI
         }
     }
 
-    return *convertedSyncArray //??????????????????????????????????????
+    return convertedSyncArray //??????????????????????????????????????
 }

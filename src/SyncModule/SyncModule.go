@@ -3,6 +3,7 @@ package syncmodule
 import (
 	"fmt"
 	."param"
+	"time"
 )
 
 func SyncModule (localElevatorID string, 
@@ -15,7 +16,7 @@ func SyncModule (localElevatorID string,
 	
 	var isAlone bool
 	localSyncArray := initLocalSyncArray(localElevatorID)
-	
+	ticker := time.NewTicker(100*time.Millisecond)
 
 	for {
 		select { 
@@ -33,15 +34,20 @@ func SyncModule (localElevatorID string,
 				}
 			}
 
-
-
-			//REDUNDANT????????????????????????????????????????
-			// Set flag if this elevator is disconnected from all others
 			if len(newPeerList.Peers) == 1 {
+				// Set non-confirmed Hallorders to unknown state.
+				for floor := 0; floor < N_FLOORS; floor++ {
+					for btn := 0; btn < N_BUTTONS-1; btn++ {
+						if localSyncArray.HallStates[floor][btn] == Hall_none || localSyncArray.HallStates[floor][btn] == Hall_unconfirmed {
+							localSyncArray.HallStates[floor][btn] = Hall_unknown
+						}
+					}
+				}
+
 				tempSyncArray := initLocalSyncArray(localElevatorID)
-				localSyncArray.HallStates = tempSyncArray.HallStates 
 				localSyncArray.AckHallStates = tempSyncArray.AckHallStates 
 
+				// Set flag if this elevator is disconnected from all others
 				isAlone = true
 			} else {
 				isAlone = false
@@ -50,46 +56,35 @@ func SyncModule (localElevatorID string,
 		case recievedSyncArray <- networkRx:
 			//Update/overwrite the sender's elevator struct in localSyncArray 
 			localSyncArray.AllElevators[recievedSyncArray.Owner] = recievedSyncArray.AllElevators[recievedSyncArray.Owner]
-			//KJØRE updateHallStates(recievedSyncArray, localSyncArray, localElevatorID) 
-			networkTx <- localSyncArray
+			localSyncArray = updateHallStates(recievedSyncArray, localSyncArray, localElevatorID) 
+			//networkTx <- localSyncArray
 			sendSyncArrayToCost <- localSyncArray 
 
-		case updatedLocalElev <- receivedLocalElevator: 
-			localSyncArray.AllElevators[localElevatorID].Floor = updatedLocalElev.Floor
-			localSyncArray.AllElevators[localElevatorID].Direction = updatedLocalElev.Direction
-			localSyncArray.AllElevators[localElevatorID].Behaviour = updatedLocalElev.Behaviour
+		case recievedLocalElev <- localElevatorCh: 
+			localSyncArray.AllElevators[localElevatorID].Floor = recievedLocalElev.Floor
+			localSyncArray.AllElevators[localElevatorID].Direction = recievedLocalElev.Direction
+			localSyncArray.AllElevators[localElevatorID].Behaviour = recievedLocalElev.Behaviour
 
-			for floors := 0; floors < N_FLOORS; floors++ {
-				//remove completed cab requests from local Elevator in localSyncArray
-				if updatedLocalElev.CompletedReq[floors][B_Cab] == true {
-					localSyncArray.AllElevators[localElevatorID].Requests[floors][B_Cab] = false 
-				}
+			localSyncArray = completeHallOrders(updatedLocalElev, localSyncArray, isAlone)
 
-				for hallBtn := 0; hallBtn < N_BUTTONS-1; hallBtn++ { 
-				//if isAlone?? 
-				// Work some magic with the hall orders. Future us has this headache (sette Hall_confirmed -> Hall_none)
-				}
-			}
-
-			networkTx <- localSyncArray
+			//networkTx <- localSyncArray
 			sendSyncArrayToCost <- localSyncArray
 
 		case newBtnEvent <- receivedButtonPress: 
+			localSyncArray = addHallOrders(newBtnEvent, localSyncArray, localElevatorID, isAlone)
 			//add new cab request to local Elevator in localSyncArray
-			if newBtnEvent.Button == B_Cab {
-				localSyncArray.AllElevators[localElevatorID].Requests[newBtnEvent.Floor][B_Cab] = true 
-			} else {
-				//SUPERFUNKSJONALITET (bump hall tingen)
-			} 
 
-			networkTx <- localSyncArray
+			//networkTx <- localSyncArray
 			sendSyncArrayToCost <- localSyncArray
+
+		case <-ticker.C:
+			networkTx <- localSyncArray
 		}
 	}
 }
 
 func initLocalSyncArray(localElevatorID string) SyncArray {
-	localSyncArray := new(SyncArray)
+	localSyncArray := SyncArray{} //var new her 
 	localSyncArray.AllElevators = make(map[string]Elevator)
 	//localSyncArray.AckHallStates = make(map[string][N_FLOORS][N_BUTTONS-1]bool)
 	localSyncArray.Owner = localElevatorID	
@@ -102,50 +97,83 @@ func initLocalSyncArray(localElevatorID string) SyncArray {
 		}
 	}
 
-	return *localSyncArray 
+	return localSyncArray //var pointer her 
 } 
 
 func updateHallStates(recievedSyncArray SyncArray, localSyncArray SyncArray, localElevatorID string) SyncArray {
-	//hvis lengden av peerlist == 1, ikke ack fordi vi ikke vil at en enslig elevator skal ta hall orders
-	if len(localSyncArray.AllElevators) > 1 {
-		if recievedSyncArray.HallStates != localSyncArray.HallStates {
-			for floors := 0; floors < N_FLOORS; floors++ {
-				for btn := 0; btn < N_BUTTONS-1; btn++ {
-					switch recievedSyncArray.HallStates[floors][btn] {
-					case Hall_unknown: 
-						fallthrough
-					case Hall_none: 
-						if localSyncArray.HallStates[floors][btn] == Hall_confirmed {
-							localSyncArray.HallStates[floors][btn] == Hall_none
-							//Delete entire Ack list for that floor and button
-						    localSyncArray.AckHallStates[floors][btn] = make(map[string]bool)
-						}
+	for floors := 0; floors < N_FLOORS; floors++ {
+		for btn := 0; btn < N_BUTTONS-1; btn++ {
+			switch recievedSyncArray.HallStates[floors][btn] {
+			case Hall_unknown: 
+				break
+
+			case Hall_none: 
+				if localSyncArray.HallStates[floors][btn] == Hall_confirmed {
+					localSyncArray.HallStates[floors][btn] = Hall_none
+					//Delete entire Ack list for that floor and button
+				    localSyncArray.AckHallStates[floors][btn] = make(map[string]bool)
+				} else if localSyncArray.HallStates[floors][btn] == Hall_unknown {
+					localSyncArray.HallStates[floors][btn] = Hall_none
+				}
+
+			case Hall_unconfirmed: 
+				if localSyncArray.HallStates[floors][btn] == Hall_unknown {
+					localSyncArray.HallStates[floors][btn] = Hall_unconfirmed
+					localSyncArray.AckHallStates[floors][btn][localElevatorID] = true
+				} else if localSyncArray.HallStates[floors][btn] == Hall_none {
+					localSyncArray.HallStates[floors][btn] = Hall_unconfirmed
+					localSyncArray.AckHallStates[floors][btn][localElevatorID] = true
+				} else if localSyncArray.HallStates[floors][btn] == Hall_unconfirmed {
+					if len(localSyncArray.AllElevators) == len(localSyncArray.AckHallStates[floors][btn]) {
+						localSyncArray.HallStates[floors][btn] = Hall_confirmed
 					}
+				} 
+
+			case Hall_confirmed:
+				if localSyncArray.HallStates[floors][btn] == Hall_unknown {
+					localSyncArray.HallStates[floors][btn] = Hall_confirmed
+					localSyncArray.AckHallStates[floors][btn][localElevatorID] = true
+				} else if localSyncArray.HallStates[floors][btn] == Hall_unconfirmed {
+					localSyncArray.HallStates[floors][btn] = Hall_confirmed
 				}
 			}
 		}
 	}
-
-}
-
-func completeHallOrders(updatedLocalElev Elevator, localSyncArray SyncArray) SyncArray {
-  //husk clear ackd 
-}
-
-func addHallOrders(newBtnEvent ButtonType, localSyncArray SyncArray, localElevatorID string) SyncArray {
-	//husk å legge til ackd
+	return localSyncArray // vAR POINTERH ER 
 }
 
 
+func completeHallOrders(updatedLocalElev Elevator, localSyncArray SyncArray, localElevatorID string, isAlone bool) SyncArray {
+	for floors := 0; floors < N_FLOORS; floors++ {
+		//remove completed cab requests from local Elevator in localSyncArray
+		if recievedLocalElev.CompletedReq[floors][B_Cab] == true {
+			localSyncArray.AllElevators[localElevatorID].Requests[floors][B_Cab] = false 
+		}
 
+		//remove completed hall orders
+		for btn := 0; btn < N_BUTTONS-1; btn++ { 
+			if updatedLocalElev.CompletedReq[floors][btn] {
+				if isAlone {
+					localSyncArray.HallStates[floors][btn] = Hall_unknown
+				} else {
+					localSyncArray.HallStates[floors][btn] = Hall_none
+				}
+				
+				//Delete entire Ack list for that floor and button
+				localSyncArray.AckHallStates[floors][btn] = make(map[string]bool)
+			} 
+		}
+	}
+	return localSyncArray
+}
 
+func addHallOrders(newBtnEvent ButtonEvent, localSyncArray SyncArray, localElevatorID string, isAlone bool) SyncArray {
+	if newBtnEvent.Button == B_Cab {
+		localSyncArray.AllElevators[localElevatorID].Requests[newBtnEvent.Floor][B_Cab] = true 
+	} else if !isAlone {
+		localSyncArray.HallStates[newBtnEvent.Floor][newBtnEvent.Button] = Hall_unconfirmed
+		localSyncArray.AckHallStates[newBtnEvent.Floor][newBtnEvent.Button][localElevatorID] = true
+	}
+	return localSyncArray //mest sann ikke peker her 
+}
 
-
-
-// https://blog.golang.org/go-maps-in-action
-/*
-m["route"] = 66
-n := len(m) <- returns the number of items in the map
-delete(m, "route") <- deletes index "route" of object m
-
-*/

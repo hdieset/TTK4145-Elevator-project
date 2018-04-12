@@ -1,0 +1,7 @@
+1) Implementere timer in case of obstruction (skje i singeelevator.go, fsm og network blant annet?) 
+2) Endre param til types 
+3) Sette opp en main to rule them all 
+4) make it nice (se gjennom listen). 
+
+https://github.com/TTK4145/Project/blob/master/EVALUATION.md
+

@@ -54,6 +54,10 @@ func SingleElevator(syncLocalElevator chan<- Elevator,
 			Fsm_ReceivedNewOrderList(newOrderlist, syncLocalElevator)
 		case arrivedAtFloor := <- drv_floors: 
 			Fsm_onFloorArrival(arrivedAtFloor, syncLocalElevator)
+			//her må stoppe en timer, hvor timeren passer på at det ikke 
+			//går for lang tid mellom etasjer. Hvis heisen fortsatt er moving
+			//må vi starte timeren igjen. Timeren startes opprinnelig når 
+			//heisen blir satt til moving. 
 		case <- doorTimedOut:
 			Fsm_onDoorTimeout(syncLocalElevator) 
 			Timer_stop() 
