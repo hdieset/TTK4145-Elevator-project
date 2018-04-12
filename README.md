@@ -23,8 +23,8 @@ Features:
 - [ ] Main (to start goroutines)
 - [x] Network (communicating to other elevators)
 - [ ] Sync array (updates and modifies the sync array)
-- [ ] Cost function (calculates whether an elevator should accept an order)
-- [ ] IO module (talks with the physical elevator)
+- [x] Cost function (calculates whether an elevator should accept an order)
+- [x] IO module (talks with the physical elevator)
 
 ## Installation and useful sidenotes
 
