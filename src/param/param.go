@@ -1,4 +1,4 @@
-package param
+package param //RENAME TIL TYPES 
 //constants for the elevator project 
 
 var Panelport string = "localhost:15657"
