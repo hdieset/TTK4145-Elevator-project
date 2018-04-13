@@ -4,7 +4,7 @@ package main
 import (
 	."SingleElevator/SingleElevatorMain"
 	"fmt"
-	."param"
+	."types"
 	."SingleElevator/elevator"
 	."SingleElevator/extPrc"
 	."Cost"

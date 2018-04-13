@@ -3,7 +3,7 @@ package elevator
 import (
 	//."SingleElevator/timer" 
 	"fmt"
-	."param" 
+	."types" 
 )
 
 func eb_toString(eb ElevatorBehaviour) string {

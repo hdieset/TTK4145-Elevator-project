@@ -4,7 +4,7 @@ import (
 	"os/exec"
 	"os"
 	"fmt"
-	."param"
+	."types"
 )
 
 var process *exec.Cmd

@@ -3,7 +3,7 @@ package fsm
 import (
 	."SingleElevator/elevator"
 	."SingleElevator/timer"
-	."param"
+	."types"
 	."SingleElevator/elevio"
 	."SingleElevator/requests"
 	"fmt"

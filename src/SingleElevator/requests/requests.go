@@ -1,6 +1,6 @@
 package requests
 
-import ."param"
+import ."types"
 
 
 func requests_above(e Elevator) bool {

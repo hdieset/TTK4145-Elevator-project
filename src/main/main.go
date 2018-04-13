@@ -9,7 +9,7 @@ import(
    	"network/bcast"
 	"network/peers"
 	"network/localip"
-	. "param"
+	."types"
 	//"flag"
 	"time" 
 	"os"

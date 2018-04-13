@@ -2,7 +2,7 @@ package syncmodule
 
 import (
 	"fmt"
-	."param"
+	."types"
 	"time"
 )
 

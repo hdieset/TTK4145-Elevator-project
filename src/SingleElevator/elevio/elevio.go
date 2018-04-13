@@ -5,7 +5,7 @@ import (
 	"sync"
 	"net" 
 	"fmt"
-	."param"
+	."types"
 )
 
 

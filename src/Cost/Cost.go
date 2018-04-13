@@ -4,7 +4,7 @@ import (
     "fmt"
     "os/exec"
     "encoding/json"
-    ."param"
+    ."types"
 )
 
 type assignerCompatibleElev struct {

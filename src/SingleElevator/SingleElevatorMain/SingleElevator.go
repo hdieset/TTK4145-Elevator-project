@@ -2,7 +2,7 @@ package SingleElevator
 import (
 	."SingleElevator/fsm"
 	"fmt"
-	."param"
+	."types"
 	."SingleElevator/elevio"
 	."SingleElevator/timer"
 	//."SingleElevator/extPrc"
