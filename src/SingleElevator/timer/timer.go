@@ -4,6 +4,10 @@ import (
 	"time"
 )
 
+var doorTimerEndTime float64 
+var doorTimerActive  bool
+var movingTimerEndTime float64
+var movingTimerActive bool
 
 func get_wall_time() float64 {
 	now := time.Now()
@@ -11,31 +15,32 @@ func get_wall_time() float64 {
 	return nano 
 } 
 
-
-var timerEndTime float64 
-var timerActive  bool
-
-func Timer_start(duration_s float64) {
-	timerEndTime = get_wall_time() + duration_s
-	timerActive = true;
+func Timer_doorStart(duration_s float64) {
+	doorTimerEndTime = get_wall_time() + duration_s
+	doorTimerActive = true;
 }
 
-
-func Timer_stop() {
-	timerActive = false
+func Timer_movingStart(duration_s float64) {
+	movingTimerEndTime = get_wall_time() + duration_s
+	movingTimerActive = true;
 }
 
+func Timer_doorStop() {
+	doorTimerActive = false
+}
 
-func Timer_timedOut(timedOut chan<- bool) {
+func Timer_movingStop() {
+	movingTimerActive = false
+}
+
+func Timer_timedOut(doorTimedOut chan<- bool, movingTimedOut chan<- bool) {
 	for {
-		if timerActive && (get_wall_time() > timerEndTime) {
-			timedOut <- true 
+		if doorTimerActive && (get_wall_time() > doorTimerEndTime) {
+			Timer_doorStop()
+			doorTimedOut <- true
+		} else if movingTimerActive && (get_wall_time() > movingTimerEndTime){
+			Timer_movingStop()
+			movingTimedOut <- true
 		}
 	}
 }
-
-
-//gammel versjon: 
-/*func Timer_timedOut() bool {
-	return (timerActive && get_wall_time() > timerEndTime)
-}*/

@@ -10,10 +10,7 @@ import (
 )
 
 var elevator Elevator 
-//vil at jeg skal lag et ElevatorOutputDevice her....
 
-//vet ikke hva jeg skal gjøre med denne enda, 
-//er en __attribute__((constructor)) som bruker elevator.con osv...
 func Fsm_init() {
 	elevator = Elevator_uninitialized()
 	Elevio_init(Panelport,N_FLOORS)
@@ -68,12 +65,12 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 	}
 
 	if doorOpenAtFloor {
-		Timer_start(elevator.DoorOpenDuration_s) 
+		Timer_doorStart(elevator.DoorOpenDuration_s) 
 	} 
 
 	if idleAtFloor {
 		Elevio_setDoorOpenLamp(true)
-		Timer_start(elevator.DoorOpenDuration_s)
+		Timer_doorStart(elevator.DoorOpenDuration_s)
 		elevator.Behaviour = EB_DoorOpen
 	} else {
 		elevator.Direction = Requests_chooseDirection(elevator)
@@ -94,6 +91,9 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 	fmt.Println("Arrived at floor", newFloor)
 	Elevator_print(elevator)
+	Timer_movingStart(//SETT INN ARGUMENT (legg til en const i types)) 
+		//husk å skrive en kommentar med hva vi driver med 
+		//og starte timeren når heisen blir satt til MOVING 
 
 	elevator.Floor = newFloor
 
@@ -102,10 +102,11 @@ func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 	switch elevator.Behaviour {
 	case EB_Moving:
 		if Requests_shouldStop(elevator) {
+			Timer_movingStop()
 			Elevio_setMotorDirection(D_Stop)
 			Elevio_setDoorOpenLamp(true)
 			elevator = Requests_clearAtCurrentFloor(elevator)
-			Timer_start(elevator.DoorOpenDuration_s)
+			Timer_doorStart(elevator.DoorOpenDuration_s) //endre til consten?? 
 			//setAllLights(elevator)
 			elevator.Behaviour = EB_DoorOpen
 		}
