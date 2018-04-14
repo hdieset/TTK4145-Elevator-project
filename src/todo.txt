@@ -4,4 +4,7 @@
 4) make it nice (se gjennom listen). 
 
 https://github.com/TTK4145/Project/blob/master/EVALUATION.md
+https://stackoverflow.com/questions/40578646/golang-i-have-a-map-of-structs-why-cant-i-directly-modify-a-field-in-a-struct
+https://play.golang.org/p/d5DBifko1l
+https://play.golang.org/p/d5DBifko1l
 

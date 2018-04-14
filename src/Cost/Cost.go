@@ -48,10 +48,6 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
         newOrderList.Local = formattedResult[LocalElevatorID]
         newOrderList.GlobalHallReq = convertedSyncArray.HallRequests 
 
-        fmt.Println("********************")
-        fmt.Println(formattedResult)
-        fmt.Println("********************")
-
         //Sending new orders to local elevator
         sendAssignedOrders <- newOrderList
     }

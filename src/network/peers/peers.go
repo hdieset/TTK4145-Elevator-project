@@ -6,13 +6,9 @@ import (
 	"net"
 	"sort"
 	"time"
+	."types"
 )
 
-type PeerUpdate struct {
-	Peers []string
-	New   string
-	Lost  []string
-}
 
 const interval = 15 * time.Millisecond
 const timeout = 400 * time.Millisecond

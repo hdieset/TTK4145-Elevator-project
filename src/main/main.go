@@ -6,75 +6,56 @@
 package main
 
 import(
-   	"network/bcast"
-	"network/peers"
-	"network/localip"
-	."types"
-	//"flag"
 	"time" 
 	"os"
 	"fmt"
 	"runtime"
+	."network/networkMain"
+	."SingleElevator/SingleElevatorMain"
+	."SingleElevator/elevator"
+	."SingleElevator/extPrc"
+	."Cost"
+	."types"
+	."SyncModule"
 )
-
-//Just testing somthing to send
-type PeerUpdate struct {
-	Peers []string
-	New   string
-	Lost  []string
-}
 
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	// Initializing network goroutine
-	id := generateId()
-	fmt.Println("Elevator id: ",id) //rename når vi har tid ? (LocalElevatorID)
-	//make relevant channels 
-	peerUpdateCh := make(chan peers.PeerUpdate)
-	peerTxEnable := make(chan bool)  
-	networkTx 	 := make(chan SyncArray)
-	networkRx    := make(chan SyncArray)
+	runtime.GOMAXPROCS(runtime.NumCPU()) //prøver å ha denne først 
 
+	if SIMULATOR {
+		ExtPrc_changeElevatorSimPort()
+	} else {
+		ExtPrc_initElevatorServer()
+	}
 
-	//init go routines 
-	go peers.Transmitter(PEERPORT, id, peerTxEnable)
-	go peers.Receiver(PEERPORT, peerUpdateCh)
-	go bcast.Transmitter(BCASTPORT,networkTx) 
-	go bcast.Receiver(BCASTPORT,networkRx)
+	localElevatorID := generateID()
+	fmt.Println("Elevator ID: ", localElevatorID)
 
-	var testMsg SyncArray
-	testMsg.Melding = "hei"
-	go func() {
-		for {
-		testMsg.Iter++ 
-		networkTx <- testMsg
-		time.Sleep(3 * time.Second)
-		}
-	}()
+	peerUpdateCh 		:= make(chan PeerUpdate)
+	peerTxEnable 		:= make(chan bool)  
+	networkTx 	 		:= make(chan SyncArray)
+	networkRx    		:= make(chan SyncArray)
+	syncLocalElevator 	:= make(chan Elevator)
+	syncButtonPress		:= make(chan ButtonEvent)
+	sendAssignedOrders 	:= make(chan AssignedOrders)
+	stopButtonPressed 	:= make(chan bool)
+	sendSyncArray		:= make(chan SyncArray)
 
+	go Network(localElevatorID, peerTxEnable, peerUpdateCh, networkTx, networkRx)
+	go SingleElevator(syncLocalElevator, syncButtonPress, sendAssignedOrders, stopButtonPressed, peerTxEnable) 
+	go Cost(sendAssignedOrders, sendSyncArray, LocalElevatorID)
+	go SyncModule(localElevatorID, peerUpdateCh, networkRx, networkTx, sendSyncArray, syncLocalElevator, syncButtonPress) 
 
-	for {
-		select {
-		case p := <-peerUpdateCh: // Skal til Sync
-			fmt.Printf("Peer update:\n")
-			fmt.Printf("  Peers:    %q\n", p.Peers)
-			fmt.Printf("  New:      %q\n", p.New)
-			fmt.Printf("  Lost:     %q\n", p.Lost)
+	<- stopButtonPressed 
 
-		case a := <-networkRx: // Skal til sync
-			fmt.Printf("Received: %#v\n", a.Iter)
-		}
+	if !SIMULATOR {
+		ExtPrc_exitElevatorServer()
 	}
 }
 
-// syncArrayRx <-chan syncArray => kanalen mottar fra kanalen
-
-//generate elevator-id with local IP + PID in a string
-func generateId()(id string) {
-	//var err error = 
+func generateID()(id string) {
 	localIP, err := localip.LocalIP()
-	//err := make(error)
 	for err != nil {
 		localIP, err = localip.LocalIP()
 		if err != nil {
@@ -85,13 +66,7 @@ func generateId()(id string) {
 		}
 	}
 	
-	id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid()) //local IP and PID in a id-string
+	id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid()) 
 	return 
 }
 
-//.bashrc
-//export GOPATH=$HOME/gruppeOgPlass9/project-gruppe-9/
-//source .bashrc <- lagrer
-// echo $GOPATH <- viser gopath
-//GOPATH=$HOME/gruppeOgPlass9/project-gruppe-9/ <- kjøres i terminal.
-// for å vise gopath: go envz
