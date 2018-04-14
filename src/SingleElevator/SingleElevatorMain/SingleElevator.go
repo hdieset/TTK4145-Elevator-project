@@ -12,7 +12,9 @@ import (
 func SingleElevator(syncLocalElevator chan<- Elevator, 
 	syncButtonPress chan<- ButtonEvent,
 	receiveAssignedOrders <-chan AssignedOrders,
-	stopButtonPressed chan<- bool) {
+	stopButtonPressed chan<- bool, network_peerTxEnable chan<- bool ) {
+
+	elevatorStuck := false 
 
 	/* if SIMULATOR {
 		ExtPrc_changeElevatorSimPort()
@@ -50,20 +52,24 @@ func SingleElevator(syncLocalElevator chan<- Elevator,
 	for {
 		select {
 		case buttonPress := <- drv_buttons: 
-			syncButtonPress <- buttonPress
+			if !elevatorStuck {
+				syncButtonPress <- buttonPress
+			}
 		case newOrderlist := <- receiveAssignedOrders:
 			Fsm_ReceivedNewOrderList(newOrderlist, syncLocalElevator)
 		case arrivedAtFloor := <- drv_floors: 
+			if elevatorStuck {
+				elevatorStuck = false 
+				network_peerTxEnable <- true
+				fmt.Println("Dobby is a free el(f)evator!")
+			}
 			Fsm_onFloorArrival(arrivedAtFloor, syncLocalElevator)
-			//her må stoppe en timer, hvor timeren passer på at det ikke 
-			//går for lang tid mellom etasjer. Hvis heisen fortsatt er moving
-			//må vi starte timeren igjen. Timeren startes opprinnelig når 
-			//heisen blir satt til moving. 
 		case <- doorTimedOut:
 			Fsm_onDoorTimeout(syncLocalElevator) 
-			//Timer_stop() 
 		case <-movingTimedOut: 
-			//DO SOMTHING
+			network_peerTxEnable <- false 
+			elevatorStuck = true 
+			fmt.Println("Aaaaaand we're stuck...")
 		case <- drv_stop:
 			Elevio_setStopLamp(false)
 			fmt.Println("Elevator died peacefully")

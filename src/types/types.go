@@ -5,12 +5,13 @@ package types
 var Panelport string = "localhost:15657"
 
 const (
-	SIMULATOR		 = false
-	PEERPORT 		 = 20009
-	BCASTPORT 		 = 30009	
-	N_FLOORS 		 = 4
-	N_BUTTONS		 = 3
-	DOOROPENDURATION = float64(3.0) 
+	SIMULATOR		  = true
+	PEERPORT 		  = 20009
+	BCASTPORT 		  = 30009	
+	N_FLOORS 		  = 4
+	N_BUTTONS		  = 3
+	DOOROPENDURATION  = float64(3.0) 
+	MAXTRAVELDURATION = float64(5.0)
 )
 
 
@@ -19,7 +20,7 @@ type HallReqStates int
 const (
 	Hall_unknown 		= HallReqStates(-1)
 	Hall_none 			= HallReqStates(0)
-	Hall_unconfirmed 	= HallReqStates(1) 
+	Hall_unconfirmed	= HallReqStates(1) 
 	Hall_confirmed 		= HallReqStates(2) 
 )
 

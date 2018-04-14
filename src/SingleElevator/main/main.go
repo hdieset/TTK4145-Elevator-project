@@ -23,6 +23,8 @@ func main() {
 	sendAssignedOrders 	:= make(chan AssignedOrders)
 	stopButtonPressed 	:= make(chan bool)
 	sendSyncArray		:= make(chan SyncArray)
+	//temp: 
+	network_peerTxEnable :=make(chan bool)
 
 	//ID FØR DETTE, placeholder: 
 	var LocalElevatorID string 
@@ -50,7 +52,7 @@ func main() {
 	localSyncArray.AllElevators["fitte"] = fitteheis
 
 
-	go SingleElevator(syncLocalElevator, syncButtonPress, sendAssignedOrders, stopButtonPressed)
+	go SingleElevator(syncLocalElevator, syncButtonPress, sendAssignedOrders, stopButtonPressed, network_peerTxEnable) //husk å sende inn 
 	go Cost(sendAssignedOrders, sendSyncArray, LocalElevatorID)
 
 	sendSyncArray <- localSyncArray //her måtte vi sende en peker. 
@@ -65,7 +67,13 @@ func main() {
 		case newButtonPress:= <- syncButtonPress: // Skal til SyncModule
 			fmt.Println("New button push at floor: ", newButtonPress.Floor)
 			fmt.Println("And button type (Up =0, Dwn = 1, Cab =2): ", newButtonPress.Button)
-
+		//TEMP: 	
+		case enable:= <- network_peerTxEnable: 
+			if enable {
+				fmt.Println("You turned ON the network")
+			} else {
+				fmt.Println("You turned OFF the network")
+			}
 		case <- stopButtonPressed: // skal til main
 			return
 		}

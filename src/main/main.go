@@ -32,7 +32,7 @@ func main() {
 	fmt.Println("Elevator id: ",id) //rename når vi har tid ? (LocalElevatorID)
 	//make relevant channels 
 	peerUpdateCh := make(chan peers.PeerUpdate)
-	peerTxEnable := make(chan bool) //redundant? 
+	peerTxEnable := make(chan bool)  
 	networkTx 	 := make(chan SyncArray)
 	networkRx    := make(chan SyncArray)
 

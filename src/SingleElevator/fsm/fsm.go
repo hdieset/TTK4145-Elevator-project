@@ -24,6 +24,7 @@ func Fsm_onInitBetweenFloors() {
 	Elevio_setMotorDirection(D_Down)
 	elevator.Direction = D_Down
 	elevator.Behaviour = EB_Moving
+	Timer_movingStart(MAXTRAVELDURATION) // Denne bør vel være her????????????????
 }
 
 func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<- Elevator) {
@@ -76,6 +77,7 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 		elevator.Direction = Requests_chooseDirection(elevator)
 		Elevio_setMotorDirection(elevator.Direction)
 		elevator.Behaviour = EB_Moving
+		Timer_movingStart(MAXTRAVELDURATION) // LAGT TIL HER ??????????????????!!!!!!!!!
 	}
 
 	setAllHallLights(newOrders)
@@ -91,8 +93,8 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 	fmt.Println("Arrived at floor", newFloor)
 	Elevator_print(elevator)
-	Timer_movingStart(//SETT INN ARGUMENT (legg til en const i types)) 
-		//husk å skrive en kommentar med hva vi driver med 
+	Timer_movingStart(MAXTRAVELDURATION) 
+
 		//og starte timeren når heisen blir satt til MOVING 
 
 	elevator.Floor = newFloor
@@ -111,7 +113,7 @@ func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 			elevator.Behaviour = EB_DoorOpen
 		}
 	default:
-		// NOP
+		// NOP - FJERNES??????????????????????????????
 	}
 
 	/*fmt.Println("\nNew state:")
@@ -134,17 +136,16 @@ func Fsm_onDoorTimeout(syncLocalElevator chan<- Elevator) {
 			elevator.Behaviour = EB_Idle
 		} else {
 			elevator.Behaviour = EB_Moving
+			Timer_movingStart(MAXTRAVELDURATION)
 		}
 	default:
-		// NOP
+		// NOP - FJERNES?????????????????????????????????????
 	}
 
 	/*fmt.Println("\nNew state:")
 	Elevator_print(elevator)*/ 
 	sendLocalElevator(syncLocalElevator)
 }
-
-
 
 
 func setAllHallLights(newOrders AssignedOrders) {
