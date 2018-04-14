@@ -12,7 +12,8 @@ import (
 func SingleElevator(syncLocalElevator chan<- Elevator, 
 	syncButtonPress chan<- ButtonEvent,
 	receiveAssignedOrders <-chan AssignedOrders,
-	stopButtonPressed chan<- bool, network_peerTxEnable chan<- bool ) {
+	stopButtonPressed chan<- bool,
+	network_peerTxEnable chan<- bool) {
 
 	elevatorStuck := false 
 
@@ -52,12 +53,14 @@ func SingleElevator(syncLocalElevator chan<- Elevator,
 	for {
 		select {
 		case buttonPress := <- drv_buttons: 
+			fmt.Println("Knapp for faen")
 			if !elevatorStuck {
 				syncButtonPress <- buttonPress
 			}
 		case newOrderlist := <- receiveAssignedOrders:
 			Fsm_ReceivedNewOrderList(newOrderlist, syncLocalElevator)
-		case arrivedAtFloor := <- drv_floors: 
+		case arrivedAtFloor := <- drv_floors:
+			fmt.Println("Single Elevator says: arrivedAtFloor") 
 			if elevatorStuck {
 				elevatorStuck = false 
 				network_peerTxEnable <- true

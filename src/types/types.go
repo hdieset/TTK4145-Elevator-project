@@ -10,28 +10,9 @@ const (
 	BCASTPORT 		  = 30009	
 	N_FLOORS 		  = 4
 	N_BUTTONS		  = 3
-	DOOROPENDURATION  = float64(3.0) 
+	DOOROPENDURATION  = float64(0.1) //skal være 3.0
 	MAXTRAVELDURATION = float64(5.0)
 )
-
-
-
-type HallReqStates int 
-const (
-	Hall_unknown 		= HallReqStates(-1)
-	Hall_none 			= HallReqStates(0)
-	Hall_unconfirmed	= HallReqStates(1) 
-	Hall_confirmed 		= HallReqStates(2) 
-)
-
-
-type SyncArray struct {
-	AllElevators 	map[string]Elevator
-	HallStates 		[N_FLOORS][N_BUTTONS-1]HallReqStates
-	AckHallStates	[N_FLOORS][N_BUTTONS-1]map[string]bool
-	Owner			string
-}
-
 
 type PeerUpdate struct {
 	Peers []string
@@ -77,6 +58,59 @@ type Elevator struct {
 type AssignedOrders struct {
 	GlobalHallReq [N_FLOORS][N_BUTTONS-1]bool
 	Local 		  [N_FLOORS][N_BUTTONS]bool
+}
+
+type HallReqStates int 
+const (
+	Hall_unknown 		= HallReqStates(-1)
+	Hall_none 			= HallReqStates(0)
+	Hall_unconfirmed	= HallReqStates(1) 
+	Hall_confirmed 		= HallReqStates(2) 
+)
+
+
+type SyncArray struct {
+	AllElevators 	map[string]*Elevator
+	HallStates 		[N_FLOORS][N_BUTTONS-1]HallReqStates
+	AckHallStates	[N_FLOORS][N_BUTTONS-1]map[string]bool
+	Owner			string
+}
+
+//function to access and modify SyncArray.AllElevators members
+func (s *SyncArray) AccessAllElevators(id string) (e *Elevator) {
+	if s.AllElevators == nil {
+		s.AllElevators = map[string]*Elevator{}
+	}
+	if e = s.AllElevators[id] ; e == nil {
+		e = &Elevator{}
+		s.AllElevators[id] = e
+	}
+	return 
+}
+
+
+type AssignerCompatibleElev struct {
+    Behaviour    string         `json:"behaviour"`
+    Floor        int            `json:"floor"`
+    Direction    string         `json:"direction"`
+    CabRequests  [N_FLOORS]bool `json:"cabRequests"`
+}
+
+type AssignerCompatibleInput struct {
+    HallRequests [N_FLOORS][N_BUTTONS-1]bool       `json:"hallRequests"`
+    States       map[string]*AssignerCompatibleElev `json:"states"`
+}
+
+//access and modify AssignerCompatbleInput.states members 
+func (input *AssignerCompatibleInput) AccessStates(id string) (elev *AssignerCompatibleElev) {
+	if input.States == nil {
+		input.States = map[string]*AssignerCompatibleElev{}
+	}
+	if elev = input.States[id] ; elev == nil {
+		elev = &AssignerCompatibleElev{}
+		input.States[id] = elev
+	}
+	return 
 }
 
 

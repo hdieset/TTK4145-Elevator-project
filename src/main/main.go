@@ -6,17 +6,16 @@
 package main
 
 import(
-	"time" 
-	"os"
 	"fmt"
 	"runtime"
 	."network/networkMain"
 	."SingleElevator/SingleElevatorMain"
-	."SingleElevator/elevator"
+	//."SingleElevator/elevator"
 	."SingleElevator/extPrc"
 	."Cost"
 	."types"
 	."SyncModule"
+	//"time"
 )
 
 
@@ -29,7 +28,7 @@ func main() {
 		ExtPrc_initElevatorServer()
 	}
 
-	localElevatorID := generateID()
+	localElevatorID := Network_generateID()
 	fmt.Println("Elevator ID: ", localElevatorID)
 
 	peerUpdateCh 		:= make(chan PeerUpdate)
@@ -44,29 +43,29 @@ func main() {
 
 	go Network(localElevatorID, peerTxEnable, peerUpdateCh, networkTx, networkRx)
 	go SingleElevator(syncLocalElevator, syncButtonPress, sendAssignedOrders, stopButtonPressed, peerTxEnable) 
-	go Cost(sendAssignedOrders, sendSyncArray, LocalElevatorID)
+	go Cost(sendAssignedOrders, sendSyncArray, localElevatorID)
 	go SyncModule(localElevatorID, peerUpdateCh, networkRx, networkTx, sendSyncArray, syncLocalElevator, syncButtonPress) 
 
-	<- stopButtonPressed 
+
+	/*ticker := time.NewTicker(100*time.Millisecond)
+	for {
+		select {
+		case <- ticker.C :
+			//<- stopButtonPressed
+		}
+	}*/
+	
+	for {
+		select {
+		case <- stopButtonPressed:
+			return 
+		}
+	}
 
 	if !SIMULATOR {
 		ExtPrc_exitElevatorServer()
 	}
 }
 
-func generateID()(id string) {
-	localIP, err := localip.LocalIP()
-	for err != nil {
-		localIP, err = localip.LocalIP()
-		if err != nil {
-			fmt.Println(err)
-			fmt.Println("Failed to connect. Retrying in 3 seconds...")
-			time.Sleep(3 * time.Second)
-			//localIP = "DISCONNECTED"
-		}
-	}
-	
-	id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid()) 
-	return 
-}
+
 

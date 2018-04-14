@@ -24,7 +24,7 @@ func Fsm_onInitBetweenFloors() {
 	Elevio_setMotorDirection(D_Down)
 	elevator.Direction = D_Down
 	elevator.Behaviour = EB_Moving
-	Timer_movingStart(MAXTRAVELDURATION) // Denne bør vel være her????????????????
+	//Timer_movingStart(MAXTRAVELDURATION) // Denne bør vel være her????????????????
 }
 
 func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<- Elevator) {
@@ -77,13 +77,14 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 		elevator.Direction = Requests_chooseDirection(elevator)
 		Elevio_setMotorDirection(elevator.Direction)
 		elevator.Behaviour = EB_Moving
-		Timer_movingStart(MAXTRAVELDURATION) // LAGT TIL HER ??????????????????!!!!!!!!!
+		//Timer_movingStart(MAXTRAVELDURATION) // LAGT TIL HER ??????????????????!!!!!!!!!
 	}
 
 	setAllHallLights(newOrders)
 	setAllCabLights()
-	fmt.Println("\nNew state:")
-	Elevator_print(elevator)
+	//fmt.Println("\nNew state:")
+	//Elevator_print(elevator)
+	fmt.Println("Fsm_ReceivedNewOrderList")
 	sendLocalElevator(syncLocalElevator)
 }
 
@@ -92,24 +93,25 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 
 func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 	fmt.Println("Arrived at floor", newFloor)
-	Elevator_print(elevator)
-	Timer_movingStart(MAXTRAVELDURATION) 
+	
+	//Timer_movingStart(MAXTRAVELDURATION) 
 
 		//og starte timeren når heisen blir satt til MOVING 
 
 	elevator.Floor = newFloor
+	Elevator_print(elevator)
 
 	Elevio_setFloorIndicator(elevator.Floor)
 
 	switch elevator.Behaviour {
 	case EB_Moving:
 		if Requests_shouldStop(elevator) {
-			Timer_movingStop()
+			//Timer_movingStop()
 			Elevio_setMotorDirection(D_Stop)
 			Elevio_setDoorOpenLamp(true)
 			elevator = Requests_clearAtCurrentFloor(elevator)
 			Timer_doorStart(elevator.DoorOpenDuration_s) //endre til consten?? 
-			//setAllLights(elevator)
+			setAllCabLights()
 			elevator.Behaviour = EB_DoorOpen
 		}
 	default:
@@ -136,7 +138,7 @@ func Fsm_onDoorTimeout(syncLocalElevator chan<- Elevator) {
 			elevator.Behaviour = EB_Idle
 		} else {
 			elevator.Behaviour = EB_Moving
-			Timer_movingStart(MAXTRAVELDURATION)
+			//Timer_movingStart(MAXTRAVELDURATION)
 		}
 	default:
 		// NOP - FJERNES?????????????????????????????????????

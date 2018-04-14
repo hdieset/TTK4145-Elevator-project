@@ -7,21 +7,8 @@ import (
     ."types"
 )
 
-type assignerCompatibleElev struct {
-    Behaviour    string         `json:"behaviour"`
-    Floor        int            `json:"floor"`
-    Direction    string         `json:"direction"`
-    CabRequests  [N_FLOORS]bool `json:"cabRequests"`
-}
-
-type assignerCompatibleInput struct {
-    HallRequests [N_FLOORS][N_BUTTONS-1]bool       `json:"hallRequests"`
-    States       map[string]assignerCompatibleElev `json:"states"`
-}
-
-
 func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan SyncArray, LocalElevatorID string){
-    const dir string = "$GOPATH" + "/src/Cost"
+    const dir string = "$GOPATH" + "/src/Cost" //dette vil ikke funke med executable, må endre gopath
     var newOrderList AssignedOrders 
 
     for {
@@ -48,14 +35,18 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
         newOrderList.Local = formattedResult[LocalElevatorID]
         newOrderList.GlobalHallReq = convertedSyncArray.HallRequests 
 
+        //newOrderList.Local[0][B_Cab] = true 
+
+
         //Sending new orders to local elevator
         sendAssignedOrders <- newOrderList
     }
 }
 
-func elevatorToAssignerConverter (inputElevator Elevator) assignerCompatibleElev {
+// Her var det mye fucky pointer drit
+func elevatorToAssignerConverter (inputElevator Elevator) AssignerCompatibleElev {
 
-    var convertedElev assignerCompatibleElev
+    var convertedElev AssignerCompatibleElev
 
     switch inputElevator.Behaviour {
     case EB_Moving:
@@ -88,13 +79,23 @@ func elevatorToAssignerConverter (inputElevator Elevator) assignerCompatibleElev
     return convertedElev
 }
 
-func syncArrayToAssignerConverter (inputSyncArray SyncArray) assignerCompatibleInput {
-    convertedSyncArray := assignerCompatibleInput{}
-    convertedSyncArray.States = make(map[string]assignerCompatibleElev)
+func syncArrayToAssignerConverter (inputSyncArray SyncArray) AssignerCompatibleInput {
+    convertedSyncArray := AssignerCompatibleInput{}
 
     for elevIdIter := range inputSyncArray.AllElevators {
-        convertedSyncArray.States[elevIdIter] = elevatorToAssignerConverter(inputSyncArray.AllElevators[elevIdIter])
-    }
+        var cheesyTemp Elevator 
+        cheesyTemp.Behaviour = inputSyncArray.AccessAllElevators(elevIdIter).Behaviour 
+        cheesyTemp.Floor = inputSyncArray.AccessAllElevators(elevIdIter).Floor 
+        cheesyTemp.Direction = inputSyncArray.AccessAllElevators(elevIdIter).Direction 
+        cheesyTemp.Requests = inputSyncArray.AccessAllElevators(elevIdIter).Requests 
+        temp := elevatorToAssignerConverter(cheesyTemp)
+        convertedSyncArray.AccessStates(elevIdIter).Behaviour = temp.Behaviour
+        convertedSyncArray.AccessStates(elevIdIter).Floor = temp.Floor
+        convertedSyncArray.AccessStates(elevIdIter).Direction = temp.Direction  
+        convertedSyncArray.AccessStates(elevIdIter).CabRequests = temp.CabRequests    
+        //convertedSyncArray.AccessStates(elevIdIter).Floor = -1 
+        //convertedSyncArray.States[elevIdIter] = elevatorToAssignerConverter(inputSyncArray.AllElevators[elevIdIter])
+    } //over: bruke accessStates??? 
 
     for floors := 0; floors < N_FLOORS; floors++ {
         if inputSyncArray.HallStates[floors][B_HallUp] == Hall_confirmed {

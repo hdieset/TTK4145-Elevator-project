@@ -3,6 +3,7 @@ package syncmodule
 import (
 	."types"
 	"time"
+	"fmt"
 )
 
 func SyncModule (localElevatorID string, 
@@ -20,6 +21,7 @@ func SyncModule (localElevatorID string,
 	for {
 		select { 
 		case newPeerList := <- peerUpdateCh:
+			fmt.Println("Case: new peer list")
 			// Deleting lost Elevators from local sync array
 			//fjerne alle ackd fra LocalSyncArray hvis peer er lost
 
@@ -53,46 +55,42 @@ func SyncModule (localElevatorID string,
 			}
 
 		case recievedSyncArray := <- networkRx:
+			fmt.Println("Case: mottok sync array paa net")
 			//Update/overwrite the sender's elevator struct in localSyncArray 
 			localSyncArray.AllElevators[recievedSyncArray.Owner] = recievedSyncArray.AllElevators[recievedSyncArray.Owner]
 			localSyncArray = updateHallStates(recievedSyncArray, localSyncArray, localElevatorID) 
 			//networkTx <- localSyncArray
 			sendSyncArrayToCost <- localSyncArray 
 
-		case recievedLocalElev := <- localElevatorCh: 
-			//recievedLocalElev.Requests = localSyncArray.AllElevators[localElevatorID].Requests
-			//recievedLocalElev.CompletedReq = localSyncArray.AllElevators[localElevatorID].CompletedReq
-
-			localSyncArray.AllElevators[localElevatorID] = recievedLocalElev
-
-		//	localSyncArray.AllElevators[localElevatorID].Floor = recievedLocalElev.Floor
-		//	localSyncArray.AllElevators[localElevatorID].Direction = recievedLocalElev.Direction
-		//	localSyncArray.AllElevators[localElevatorID].Behaviour = recievedLocalElev.Behaviour
-
-			localSyncArray = completeHallOrders(recievedLocalElev, localSyncArray, isAlone)
-
-			//networkTx <- localSyncArray
-			sendSyncArrayToCost <- localSyncArray
-
 		case newBtnEvent := <- receivedButtonPress: 
+			fmt.Println("case: mottok knapp")
 			localSyncArray = addHallOrders(newBtnEvent, localSyncArray, localElevatorID, isAlone)
 			//add new cab request to local Elevator in localSyncArray
-
+			//fmt.Println("knapp lagt til i sync array")
 			//networkTx <- localSyncArray
 			sendSyncArrayToCost <- localSyncArray
 
+		case recievedLocalElev := <- localElevatorCh: 
+			fmt.Println("Case: mottok local Elevator")
+			localSyncArray.AccessAllElevators(localElevatorID).Floor = recievedLocalElev.Floor
+			localSyncArray.AccessAllElevators(localElevatorID).Direction = recievedLocalElev.Direction
+			localSyncArray.AccessAllElevators(localElevatorID).Behaviour = recievedLocalElev.Behaviour
+			localSyncArray = completeHallOrders(recievedLocalElev, localSyncArray, localElevatorID, isAlone)
+
+			//networkTx <- localSyncArray
+			//sendSyncArrayToCost <- localSyncArray
 		case <-ticker.C:
-			networkTx <- localSyncArray
+			networkTx <- localSyncArray 
 		}
 	}
 }
 
 func initLocalSyncArray(localElevatorID string) SyncArray {
-	localSyncArray := SyncArray{AllElevators : make(map[string]Elevator)} //var new her 
+	localSyncArray := SyncArray{} //var new her 
 	//localSyncArray.AllElevators = make(map[string]Elevator)
 	//localSyncArray.AckHallStates = make(map[string][N_FLOORS][N_BUTTONS-1]bool)
 	localSyncArray.Owner = localElevatorID
-	localSyncArray.AllElevators[localElevatorID] = Elevator{}
+	//localSyncArray.AccessAllElevators(localElevatorID) = Elevator{}
 
 	//set all hall states to unknown in case of reboot
 	for floors := 0; floors < N_FLOORS; floors++ {
@@ -151,8 +149,8 @@ func updateHallStates(recievedSyncArray SyncArray, localSyncArray SyncArray, loc
 func completeHallOrders(updatedLocalElev Elevator, localSyncArray SyncArray, localElevatorID string, isAlone bool) SyncArray {
 	for floors := 0; floors < N_FLOORS; floors++ {
 		//remove completed cab requests from local Elevator in localSyncArray
-		if recievedLocalElev.CompletedReq[floors][B_Cab] == true {
-			localSyncArray.AllElevators[localElevatorID].Requests[floors][B_Cab] = false 
+		if updatedLocalElev.CompletedReq[floors][B_Cab] == true {
+			localSyncArray.AccessAllElevators(localElevatorID).Requests[floors][B_Cab] = false 
 		}
 
 		//remove completed hall orders
@@ -174,7 +172,7 @@ func completeHallOrders(updatedLocalElev Elevator, localSyncArray SyncArray, loc
 
 func addHallOrders(newBtnEvent ButtonEvent, localSyncArray SyncArray, localElevatorID string, isAlone bool) SyncArray {
 	if newBtnEvent.Button == B_Cab {
-		localSyncArray.AllElevators[localElevatorID].Requests[newBtnEvent.Floor][B_Cab] = true 
+		localSyncArray.AccessAllElevators(localElevatorID).Requests[newBtnEvent.Floor][B_Cab] = true 
 	} else if !isAlone {
 		localSyncArray.HallStates[newBtnEvent.Floor][newBtnEvent.Button] = Hall_unconfirmed
 		localSyncArray.AckHallStates[newBtnEvent.Floor][newBtnEvent.Button][localElevatorID] = true

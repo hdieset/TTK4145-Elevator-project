@@ -3,7 +3,7 @@
    Lord Sauron in the great fires of Mount Doom, this *master* file 
    became entitled with powers to control the greedy greedy goroutines,
    blinded by their illusion of control. One main to rule them all. */
-package main
+package mainCOPY
 
 import(
    	"network/bcast"

@@ -9,10 +9,10 @@ import (
 )
 
 
-const _pollRate = 20 * time.Millisecond
+const _pollRate = 10 * time.Millisecond //VAR 20 OPPRINNELIG 
 
 var _initialized bool = false
-var _numFloors int = 4
+var _numFloors int = N_FLOORS
 var _mtx sync.Mutex
 var _conn net.Conn
 
@@ -65,12 +65,14 @@ func Elevio_setStopLamp(value bool) {
 func Elevio_pollButtons(receiver chan<- ButtonEvent) {
 	prev := make([][3]bool, _numFloors)
 	for {
-		time.Sleep(_pollRate)
+		time.Sleep(_pollRate*2)
 		for f := 0; f < _numFloors; f++ {
 			for b := ButtonType(0); b < 3; b++ {
 				v := getButton(b, f)
 				if v != prev[f][b] && v != false {
+					fmt.Println("Detekterte knapp i elevio")
 					receiver <- ButtonEvent{f, ButtonType(b)}
+					//time.Sleep(_pollRate*50) prøvde å unngå frysing pga knappe spam 
 				}
 				prev[f][b] = v
 			}
@@ -84,6 +86,7 @@ func Elevio_pollFloorSensor(receiver chan<- int) {
 		time.Sleep(_pollRate)
 		v := getFloor()
 		if v != prev && v != -1 {
+			fmt.Println("Elevio says new floor")
 			receiver <- v
 		}
 		prev = v
