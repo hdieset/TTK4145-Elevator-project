@@ -17,7 +17,7 @@ func SyncModule (localElevatorID string,
 	var isAlone bool
 	var initialized bool = false
 	localSyncArray := initLocalSyncArray()
-	ticker := time.NewTicker(3000*time.Millisecond)
+	ticker := time.NewTicker(200*time.Millisecond)
 	time.Sleep(500*time.Millisecond) //la til denne 
 	for {
 		select { 
@@ -59,9 +59,11 @@ func SyncModule (localElevatorID string,
 			}
 
 		case recievedSyncArray := <- networkRx:
+			fmt.Println("Mottok en sync array fra heis:", recievedSyncArray.AllElevators[0].Id)
 			if initialized { //kan dette løses med peerTxenable? ELLER KAN VI FLYTTE  ?? 
 				//the owner of a SyncArray will always have it's own Elevator struct at index 0 in .AllElevators
 				fmt.Println("Lengde på recievedSyncArray.AllElevators:",len(recievedSyncArray.AllElevators))
+				
 				if index := Sync_ElevIndexFinder(localSyncArray,recievedSyncArray.AllElevators[0].Id); index != -1 {
 					localSyncArray.AllElevators[index] = recievedSyncArray.AllElevators[0]
 				} else {
@@ -105,7 +107,7 @@ func SyncModule (localElevatorID string,
 				//fmt.Println(localSyncArray.HallStates)
 				//fmt.Println("Lengde på AllElevators:", len(localSyncArray.AllElevators))
 				//fmt.Println("Lengde på AckHallStates", len(localSyncArray.AckHallStates[1][B_HallDown]))
-				printSyncArray(localSyncArray)
+				//printSyncArray(localSyncArray)
 
 			}
 		}
@@ -127,8 +129,14 @@ func initLocalSyncArray() SyncArray {
 } 
 
 func updateHallStates(recievedSyncArray SyncArray, localSyncArray SyncArray, localElevatorID string) SyncArray {
+	senderID := recievedSyncArray.AllElevators[0].Id
+
 	for floors := 0; floors < N_FLOORS; floors++ {
 		for btn := 0; btn < N_BUTTONS-1; btn++ {
+			if recAck := recievedSyncArray.AckHallStates[floors][btn][senderID]; recAck == true {
+				localSyncArray.AckHallStates[floors][btn][senderID] = recAck
+			}
+
 			switch recievedSyncArray.HallStates[floors][btn] {
 			case Hall_none: 
 				if localSyncArray.HallStates[floors][btn] == Hall_confirmed {
