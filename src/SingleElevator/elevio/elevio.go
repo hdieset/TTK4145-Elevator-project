@@ -8,7 +8,6 @@ import (
 	."types"
 )
 
-
 const _pollRate = 20 * time.Millisecond  
 
 var _initialized bool = false
@@ -70,9 +69,7 @@ func Elevio_pollButtons(receiver chan<- ButtonEvent) {
 			for b := ButtonType(0); b < 3; b++ {
 				v := getButton(b, f)
 				if v != prev[f][b] && v != false {
-					fmt.Println("Detekterte knapp i elevio")
 					receiver <- ButtonEvent{f, ButtonType(b)}
-					//time.Sleep(_pollRate*50) prøvde å unngå frysing pga knappe spam 
 				}
 				prev[f][b] = v
 			}
@@ -86,7 +83,6 @@ func Elevio_pollFloorSensor(receiver chan<- int) {
 		time.Sleep(_pollRate)
 		v := getFloor()
 		if v != prev && v != -1 {
-			fmt.Println("Elevio says new floor")
 			receiver <- v
 		}
 		prev = v

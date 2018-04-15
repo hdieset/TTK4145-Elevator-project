@@ -5,7 +5,6 @@ import (
     "os/exec"
     "encoding/json"
     ."types"
-    "time"
 )
 
 func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan SyncArray, LocalElevatorID string){
@@ -16,16 +15,7 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
         //waiting for sync module to send new sync array
         newSyncArray := <- receiveSyncArray 
 
-        t := time.Now()
-		fmt.Println(t.String()," - Sync array for konvertering:")
-        //fmt.Println(newSyncArray)
-        //fmt.Println("****************************************************************")
-
-
         convertedSyncArray := syncArrayToAssignerConverter(newSyncArray)
-
-
-        fmt.Println("convertedSyncArray sendes til json.Marshal:")
 
         assignerInput,_ := json.Marshal(convertedSyncArray)
 
@@ -34,7 +24,7 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
         result ,err := cmd.Output()
 
         if err != nil {
-        fmt.Println(err)
+            fmt.Println(err)
         }
 
         var formattedResult map[string][N_FLOORS][N_BUTTONS]bool
@@ -44,12 +34,6 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
         //Assigning orders to local elevator and global hall requests for lights on panel
         newOrderList.Local = formattedResult[LocalElevatorID]
         newOrderList.GlobalHallReq = convertedSyncArray.HallRequests 
-
-        fmt.Println("newOrderList som sendes til SingleElevator")
-        //fmt.Println(newOrderList)
-
-        //newOrderList.Local[0][B_Cab] = true 
-
 
         //Sending new orders to local elevator
         sendAssignedOrders <- newOrderList
@@ -95,12 +79,11 @@ func elevatorToAssignerConverter (inputElevator Elevator) AssignerCompatibleElev
 func syncArrayToAssignerConverter (inputSyncArray SyncArray) AssignerCompatibleInput {
     convertedSyncArray := AssignerCompatibleInput{}
     convertedSyncArray.States = make(map[string]*AssignerCompatibleElev)
-    //convertedSyncArray.States[LocalElevatorID]
 
-    for elevIter := range inputSyncArray.AllElevators {  //potential bug????????????????????????????
+    for elevIter := range inputSyncArray.AllElevators { 
         temp := elevatorToAssignerConverter(inputSyncArray.AllElevators[elevIter]) 
         convertedSyncArray.States[inputSyncArray.AllElevators[elevIter].Id] = &temp
-    } //over: bruke accessStates??? 
+    } 
 
     for floors := 0; floors < N_FLOORS; floors++ {
     	for btn := 0; btn < N_BUTTONS-1; btn++ {

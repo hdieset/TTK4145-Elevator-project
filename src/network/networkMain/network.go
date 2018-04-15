@@ -18,8 +18,7 @@ func Network(localElevatorID string,
 
 	go peers.Transmitter(PEERPORT, localElevatorID, peerTxEnable)
 	go peers.Receiver(PEERPORT, peerUpdateCh)
-	go bcast.Transmitter(BCASTPORT,localElevatorID, networkTx) 
-	//go bcast.Transmitter(BCASTPORT, networkTx) 
+	go bcast.Transmitter(BCASTPORT,localElevatorID, networkTx)  
 	go bcast.Receiver(BCASTPORT, localElevatorID, networkRx)
 }
 

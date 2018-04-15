@@ -16,8 +16,6 @@ func Fsm_init() {
 	Elevio_init(Panelport,N_FLOORS)
 	Elevio_setStopLamp(true)
 	Elevio_setDoorOpenLamp(false)
-	//unsure if we should set floor indicator before we know what floor we're on
-	//SetFloorIndicator(0)
 }
 
 func Fsm_onInitBetweenFloors() {
@@ -84,22 +82,17 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 	setAllCabLights()
 	//fmt.Println("\nNew state:")
 	//Elevator_print(elevator)
-	fmt.Println("Fsm_ReceivedNewOrderList")
 	sendLocalElevator(syncLocalElevator)
 }
-
-
-
 
 func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 	fmt.Println("Arrived at floor", newFloor)
 	
 	//Timer_movingStart(MAXTRAVELDURATION) 
-
-		//og starte timeren når heisen blir satt til MOVING 
+	//og starte timeren når heisen blir satt til MOVING 
 
 	elevator.Floor = newFloor
-	Elevator_print(elevator)
+	//Elevator_print(elevator)
 
 	Elevio_setFloorIndicator(elevator.Floor)
 
@@ -115,18 +108,14 @@ func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 			elevator.Behaviour = EB_DoorOpen
 		}
 	default:
-		// NOP - FJERNES??????????????????????????????
 	}
 
-	/*fmt.Println("\nNew state:")
-	Elevator_print(elevator)*/ 
 	sendLocalElevator(syncLocalElevator)
-
 }
 
 func Fsm_onDoorTimeout(syncLocalElevator chan<- Elevator) {
 	fmt.Println("Door closed")
-	Elevator_print(elevator)
+	//Elevator_print(elevator)
 
 	switch elevator.Behaviour {
 	case EB_DoorOpen:
@@ -141,11 +130,8 @@ func Fsm_onDoorTimeout(syncLocalElevator chan<- Elevator) {
 			//Timer_movingStart(MAXTRAVELDURATION)
 		}
 	default:
-		// NOP - FJERNES?????????????????????????????????????
 	}
 
-	/*fmt.Println("\nNew state:")
-	Elevator_print(elevator)*/ 
 	sendLocalElevator(syncLocalElevator)
 }
 

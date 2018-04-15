@@ -32,19 +32,6 @@ func elevio_dirn_toString(d Dirn) string {
 	}
 }
 
-/*func elevio_button_toString(b ButtonType) string {
-	switch b {
-		case B_HallUp:
-			return "B_HallUp"
-		case B_HallDown:
-			return "B_HallDown" 
-		case B_Cab:
-			return "B_Cab"
-		default: 
-			return "B_UNDEFINED"
-	}
-} */ 
-
 //problemer med at button ikke er en enum, må fikse senere...
 func Elevator_print(es Elevator) {
 	p := fmt.Printf
@@ -70,8 +57,6 @@ func Elevator_print(es Elevator) {
     p("  +--------------------+\n")
 } 
 
-
-
 func Elevator_uninitialized() Elevator {
 	e := Elevator {
 		Floor: -1,
@@ -81,13 +66,3 @@ func Elevator_uninitialized() Elevator {
 	}
 	return e
 }
-
-
-	/* func main() {
-	test := Elevator_uninitialized()
-	test.Direction = D_Up
-	test.Requests[2][1] = 1
-	test.Requests[1][2] = 1
-	Elevator_print(test)
-	} */ 
-

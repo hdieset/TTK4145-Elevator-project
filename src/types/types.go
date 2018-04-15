@@ -10,7 +10,7 @@ const (
 	BCASTPORT 		  = 30009	
 	N_FLOORS 		  = 4
 	N_BUTTONS		  = 3
-	DOOROPENDURATION  = float64(3.0) //skal være 3.0
+	DOOROPENDURATION  = float64(3.0) 
 	MAXTRAVELDURATION = float64(5.0)
 )
 
@@ -41,7 +41,7 @@ type ButtonEvent struct {
 
 type ElevatorBehaviour int
 const(
-	EB_Idle		= iota   // Just set arbitrary values for these
+	EB_Idle		= iota 
 	EB_DoorOpen
 	EB_Moving
 )
@@ -74,21 +74,7 @@ type SyncArray struct {
 	AllElevators 	[]Elevator
 	HallStates 		[N_FLOORS][N_BUTTONS-1]HallReqStates
 	AckHallStates	[N_FLOORS][N_BUTTONS-1]map[string]bool
-	//Owner			string
 }
-
-//function to access and modify SyncArray.AllElevators members
-/* func (s *SyncArray) AccessAllElevators(id string) (e *Elevator) {
-	if s.AllElevators == nil {
-		s.AllElevators = map[string]*Elevator{}
-	}
-	if e = s.AllElevators[id] ; e == nil {
-		e = &Elevator{}
-		s.AllElevators[id] = e
-	}
-	return 
-}*/ 
-
 
 type AssignerCompatibleElev struct {
     Behaviour    string         `json:"behaviour"`
@@ -101,18 +87,6 @@ type AssignerCompatibleInput struct {
     HallRequests [N_FLOORS][N_BUTTONS-1]bool       `json:"hallRequests"`
     States       map[string]*AssignerCompatibleElev `json:"states"`
 }
-
-//access and modify AssignerCompatbleInput.states members 
-/* func (input *AssignerCompatibleInput) AccessStates(id string) (elev *AssignerCompatibleElev) {
-	if input.States == nil {
-		input.States = map[string]*AssignerCompatibleElev{}
-	}
-	if elev = input.States[id] ; elev == nil {
-		elev = &AssignerCompatibleElev{}
-		input.States[id] = elev
-	}
-	return 
-} */ 
 
 
 

@@ -10,17 +10,15 @@ import(
 	"runtime"
 	."network/networkMain"
 	."SingleElevator/SingleElevatorMain"
-	//."SingleElevator/elevator"
 	."SingleElevator/extPrc"
 	."Cost"
 	."types"
 	."SyncModule"
-	//"time"
 )
 
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU()) //prøver å ha denne først 
+	runtime.GOMAXPROCS(runtime.NumCPU()) 
 
 	if SIMULATOR {
 		ExtPrc_changeElevatorSimPort()
@@ -47,14 +45,6 @@ func main() {
 	go Cost(sendAssignedOrders, sendSyncArray, localElevatorID)
 	go SyncModule(localElevatorID, peerUpdateCh, networkRx, networkTx, sendSyncArray, syncLocalElevator, syncButtonPress) 
 	go Network(localElevatorID, peerTxEnable, peerUpdateCh, networkTx, networkRx)
-
-	/*ticker := time.NewTicker(100*time.Millisecond)
-	for {
-		select {
-		case <- ticker.C :
-			//<- stopButtonPressed
-		}
-	}*/
 	
 	for {
 		select {

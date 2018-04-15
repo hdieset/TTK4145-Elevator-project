@@ -93,22 +93,3 @@ func Requests_clearAtCurrentFloor(e Elevator) Elevator {
 	}
 	return e
 }
-
-/* // For testing purposes
- func main(){
-	//p() := fmt.Println()
-	//var heis Elevator
-	heis := Elevator_uninitialized()
-	//heis.config.doorOpenDuration_s = DoorOpenDuration_s
-	heis.Floor = 1
-	heis.Direction = D_Up
-	fmt.Println(heis.Floor)
-	heis.Requests[1][B_HallUp] = true
-	heis.Requests[1][B_HallDown] = true
-	heis.Requests[1][B_Cab] = true
-	Elevator_print(heis)
-	fmt.Println("**********************************")
-	Elevator_print(reqests_clearAtCurrentFloor(heis))
-	//p(heis.floor)
-} 
-*/

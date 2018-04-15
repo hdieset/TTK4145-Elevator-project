@@ -60,15 +60,8 @@ func SyncModule (localElevatorID string,
 
 		case recievedSyncArray := <- networkRx:
 			if initialized { //kan dette løses med peerTxenable? ELLER KAN VI FLYTTE  ?? 
-				t := time.Now()
-				fmt.Println(t.String()," - Case: mottok sync array paa net")
-				fmt.Println("******************************************************")
-				fmt.Println(recievedSyncArray)
-				fmt.Println("******************************************************\n")
-				//Update/overwrite the sender's elevator struct in localSyncArray 
-
-				
 				//the owner of a SyncArray will always have it's own Elevator struct at index 0 in .AllElevators
+				fmt.Println("Lengde på recievedSyncArray.AllElevators:",len(recievedSyncArray.AllElevators))
 				if index := Sync_ElevIndexFinder(localSyncArray,recievedSyncArray.AllElevators[0].Id); index != -1 {
 					localSyncArray.AllElevators[index] = recievedSyncArray.AllElevators[0]
 				} else {
@@ -82,20 +75,11 @@ func SyncModule (localElevatorID string,
 
 		case newBtnEvent := <- receivedButtonPress: 
 			if initialized {
-				fmt.Println("case: mottok knapp")
 				localSyncArray = addOrders(newBtnEvent, localSyncArray, localElevatorID, isAlone)
-				//add new cab request to local Elevator in localSyncArray
-				//fmt.Println("knapp lagt til i sync array")
-				//networkTx <- localSyncArray
-				fmt.Println("Sync array som sendes til cost: ")
-				printSyncArray(localSyncArray)
 				sendSyncArrayToCost <- localSyncArray
 			}
 
 		case recievedLocalElev := <- localElevatorCh: 
-			
-			fmt.Println("Case: mottok local Elevator")
-			
 			//KAN VI FLYTTE DENNE TIL OVER FOR SELECTEN??????????????????????????????????????????????????????????
 			if !initialized { 
 				//localSyncArray.AllElevators = append(localSyncArray.AllElevators, recievedLocalElev)
@@ -117,29 +101,20 @@ func SyncModule (localElevatorID string,
 
 		case <-ticker.C:
 			if initialized {
-				t := time.Now()
-				fmt.Println(t.String()," - Case: Ticker, send localSyncArray to other peers:")
-				printSyncArray(localSyncArray)
 				networkTx <- localSyncArray 
+				//fmt.Println(localSyncArray.HallStates)
+				//fmt.Println("Lengde på AllElevators:", len(localSyncArray.AllElevators))
+				//fmt.Println("Lengde på AckHallStates", len(localSyncArray.AckHallStates[1][B_HallDown]))
+				printSyncArray(localSyncArray)
+
 			}
 		}
-		
 	}
-
 }
 
-func initLocalSyncArray() SyncArray { //tok inn localElevID før 
-	localSyncArray := SyncArray{} //var new her
+func initLocalSyncArray() SyncArray { 
+	localSyncArray := SyncArray{} 
 	localSyncArray.AllElevators = append(localSyncArray.AllElevators, Elevator{})
-	//localSyncArray.AllElevators = make(map[string]Elevator)
-	//localSyncArray.AckHallStates = make(map[string][N_FLOORS][N_BUTTONS-1]bool)
-
-
-	//localSyncArray.Owner = localElevatorID
-
-
-	//localSyncArray.AccessAllElevators(localElevatorID) = Elevator{}
-
 	//set all hall states to unknown in case of reboot
 	for floors := 0; floors < N_FLOORS; floors++ {
 		for btn := 0; btn < N_BUTTONS-1; btn++ {
@@ -148,21 +123,19 @@ func initLocalSyncArray() SyncArray { //tok inn localElevID før
 		}
 	}
 
-	return localSyncArray //var pointer her 
+	return localSyncArray  
 } 
 
 func updateHallStates(recievedSyncArray SyncArray, localSyncArray SyncArray, localElevatorID string) SyncArray {
 	for floors := 0; floors < N_FLOORS; floors++ {
 		for btn := 0; btn < N_BUTTONS-1; btn++ {
 			switch recievedSyncArray.HallStates[floors][btn] {
-			case Hall_unknown: 
-				break
-
 			case Hall_none: 
 				if localSyncArray.HallStates[floors][btn] == Hall_confirmed {
 					localSyncArray.HallStates[floors][btn] = Hall_none
 					//Delete entire Ack list for that floor and button
 				    localSyncArray.AckHallStates[floors][btn] = make(map[string]bool)
+
 				} else if localSyncArray.HallStates[floors][btn] == Hall_unknown {
 					localSyncArray.HallStates[floors][btn] = Hall_none
 				}
@@ -171,9 +144,11 @@ func updateHallStates(recievedSyncArray SyncArray, localSyncArray SyncArray, loc
 				if localSyncArray.HallStates[floors][btn] == Hall_unknown {
 					localSyncArray.HallStates[floors][btn] = Hall_unconfirmed
 					localSyncArray.AckHallStates[floors][btn][localElevatorID] = true
+
 				} else if localSyncArray.HallStates[floors][btn] == Hall_none {
 					localSyncArray.HallStates[floors][btn] = Hall_unconfirmed
 					localSyncArray.AckHallStates[floors][btn][localElevatorID] = true
+
 				} else if localSyncArray.HallStates[floors][btn] == Hall_unconfirmed {
 					if len(localSyncArray.AllElevators) == len(localSyncArray.AckHallStates[floors][btn]) {
 						localSyncArray.HallStates[floors][btn] = Hall_confirmed
@@ -184,9 +159,12 @@ func updateHallStates(recievedSyncArray SyncArray, localSyncArray SyncArray, loc
 				if localSyncArray.HallStates[floors][btn] == Hall_unknown {
 					localSyncArray.HallStates[floors][btn] = Hall_confirmed
 					localSyncArray.AckHallStates[floors][btn][localElevatorID] = true
+
 				} else if localSyncArray.HallStates[floors][btn] == Hall_unconfirmed {
 					localSyncArray.HallStates[floors][btn] = Hall_confirmed
 				}
+
+			case Hall_unknown: 
 			}
 		}
 	}
