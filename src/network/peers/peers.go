@@ -17,7 +17,6 @@ func Transmitter(port int, id string, transmitEnable <-chan bool) {
 
 	conn := conn.DialBroadcastUDP(port)
 	addr, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf("255.255.255.255:%d", port))
-
 	enable := true
 	for {
 		select {
@@ -37,7 +36,6 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 	lastSeen := make(map[string]time.Time)
 
 	conn := conn.DialBroadcastUDP(port)
-
 	for {
 		updated := false
 

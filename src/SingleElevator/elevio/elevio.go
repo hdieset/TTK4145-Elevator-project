@@ -9,7 +9,7 @@ import (
 )
 
 
-const _pollRate = 10 * time.Millisecond //VAR 20 OPPRINNELIG 
+const _pollRate = 20 * time.Millisecond  
 
 var _initialized bool = false
 var _numFloors int = N_FLOORS
@@ -65,7 +65,7 @@ func Elevio_setStopLamp(value bool) {
 func Elevio_pollButtons(receiver chan<- ButtonEvent) {
 	prev := make([][3]bool, _numFloors)
 	for {
-		time.Sleep(_pollRate*2)
+		time.Sleep(_pollRate)
 		for f := 0; f < _numFloors; f++ {
 			for b := ButtonType(0); b < 3; b++ {
 				v := getButton(b, f)

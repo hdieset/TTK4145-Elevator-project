@@ -34,7 +34,9 @@ func Timer_movingStop() {
 }
 
 func Timer_timedOut(doorTimedOut chan<- bool, movingTimedOut chan<- bool) {
+	sleeptime := 20*time.Millisecond
 	for {
+		time.Sleep(sleeptime)
 		if doorTimerActive && (get_wall_time() > doorTimerEndTime) {
 			Timer_doorStop()
 			doorTimedOut <- true

@@ -9,7 +9,7 @@ import (
 )
 
 func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan SyncArray, LocalElevatorID string){
-    const dir string = "$GOPATH" + "/src/Cost" //dette vil ikke funke med executable, må endre gopath
+    const dir string = "$GOPATH" + "/src/Cost" //dette vil ikke funke med executable(?), må endre gopath
     var newOrderList AssignedOrders 
 
     for {
@@ -18,11 +18,14 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
 
         t := time.Now()
 		fmt.Println(t.String()," - Sync array for konvertering:")
-        fmt.Println(newSyncArray)
-        fmt.Println("****************************************************************")
+        //fmt.Println(newSyncArray)
+        //fmt.Println("****************************************************************")
+
+
         convertedSyncArray := syncArrayToAssignerConverter(newSyncArray)
-        fmt.Println("Sync Array som sendes til Marshal:")
-        fmt.Println(convertedSyncArray)
+
+
+        fmt.Println("convertedSyncArray sendes til json.Marshal:")
 
         assignerInput,_ := json.Marshal(convertedSyncArray)
 
@@ -43,7 +46,7 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
         newOrderList.GlobalHallReq = convertedSyncArray.HallRequests 
 
         fmt.Println("newOrderList som sendes til SingleElevator")
-        fmt.Println(newOrderList)
+        //fmt.Println(newOrderList)
 
         //newOrderList.Local[0][B_Cab] = true 
 
@@ -54,7 +57,7 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
 }
 
 // Her var det mye fucky pointer drit
-func elevatorToAssignerConverter (inputElevator *Elevator) AssignerCompatibleElev {
+func elevatorToAssignerConverter (inputElevator Elevator) AssignerCompatibleElev {
 
     var convertedElev AssignerCompatibleElev
 
@@ -94,34 +97,18 @@ func syncArrayToAssignerConverter (inputSyncArray SyncArray) AssignerCompatibleI
     convertedSyncArray.States = make(map[string]*AssignerCompatibleElev)
     //convertedSyncArray.States[LocalElevatorID]
 
-    for elevIdIter := range inputSyncArray.AllElevators {
-        /*var cheesyTemp Elevator 
-        cheesyTemp.Behaviour = inputSyncArray.AccessAllElevators(elevIdIter).Behaviour 
-        cheesyTemp.Floor = inputSyncArray.AccessAllElevators(elevIdIter).Floor 
-        cheesyTemp.Direction = inputSyncArray.AccessAllElevators(elevIdIter).Direction 
-        cheesyTemp.Requests = inputSyncArray.AccessAllElevators(elevIdIter).Requests 
-        temp := elevatorToAssignerConverter(cheesyTemp)
-        convertedSyncArray.AccessStates(elevIdIter).Behaviour = temp.Behaviour
-        convertedSyncArray.AccessStates(elevIdIter).Floor = temp.Floor
-        convertedSyncArray.AccessStates(elevIdIter).Direction = temp.Direction  
-        convertedSyncArray.AccessStates(elevIdIter).CabRequests = temp.CabRequests    
-        //convertedSyncArray.AccessStates(elevIdIter).Floor = -1 
-        //convertedSyncArray.States[elevIdIter] = elevatorToAssignerConverter(inputSyncArray.AllElevators[elevIdIter])*/
-
-        temp := elevatorToAssignerConverter(inputSyncArray.AllElevators[elevIdIter])
-        convertedSyncArray.States[elevIdIter] = &temp
-
+    for elevIter := range inputSyncArray.AllElevators {  //potential bug????????????????????????????
+        temp := elevatorToAssignerConverter(inputSyncArray.AllElevators[elevIter]) 
+        convertedSyncArray.States[inputSyncArray.AllElevators[elevIter].Id] = &temp
     } //over: bruke accessStates??? 
 
     for floors := 0; floors < N_FLOORS; floors++ {
-        if inputSyncArray.HallStates[floors][B_HallUp] == Hall_confirmed {
-            convertedSyncArray.HallRequests[floors][B_HallUp] = true
-        }
-        
-        if inputSyncArray.HallStates[floors][B_HallDown] == Hall_confirmed {
-            convertedSyncArray.HallRequests[floors][B_HallDown] = true
-        }
+    	for btn := 0; btn < N_BUTTONS-1; btn++ {
+	        if inputSyncArray.HallStates[floors][btn] == Hall_confirmed {
+	            convertedSyncArray.HallRequests[floors][btn] = true
+	        }
+      	}
     }
 
-    return convertedSyncArray //??????????????????????????????????????
+    return convertedSyncArray 
 }

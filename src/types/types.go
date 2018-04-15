@@ -53,6 +53,7 @@ type Elevator struct {
 	CompletedReq [N_FLOORS][N_BUTTONS] bool
 	Behaviour 	 ElevatorBehaviour
 	DoorOpenDuration_s float64
+	Id 			string
 }
 
 type AssignedOrders struct {
@@ -70,14 +71,14 @@ const (
 
 
 type SyncArray struct {
-	AllElevators 	map[string]*Elevator
+	AllElevators 	[]Elevator
 	HallStates 		[N_FLOORS][N_BUTTONS-1]HallReqStates
 	AckHallStates	[N_FLOORS][N_BUTTONS-1]map[string]bool
-	Owner			string
+	//Owner			string
 }
 
 //function to access and modify SyncArray.AllElevators members
-func (s *SyncArray) AccessAllElevators(id string) (e *Elevator) {
+/* func (s *SyncArray) AccessAllElevators(id string) (e *Elevator) {
 	if s.AllElevators == nil {
 		s.AllElevators = map[string]*Elevator{}
 	}
@@ -86,7 +87,7 @@ func (s *SyncArray) AccessAllElevators(id string) (e *Elevator) {
 		s.AllElevators[id] = e
 	}
 	return 
-}
+}*/ 
 
 
 type AssignerCompatibleElev struct {
@@ -102,7 +103,7 @@ type AssignerCompatibleInput struct {
 }
 
 //access and modify AssignerCompatbleInput.states members 
-func (input *AssignerCompatibleInput) AccessStates(id string) (elev *AssignerCompatibleElev) {
+/* func (input *AssignerCompatibleInput) AccessStates(id string) (elev *AssignerCompatibleElev) {
 	if input.States == nil {
 		input.States = map[string]*AssignerCompatibleElev{}
 	}
@@ -111,7 +112,7 @@ func (input *AssignerCompatibleInput) AccessStates(id string) (elev *AssignerCom
 		input.States[id] = elev
 	}
 	return 
-}
+} */ 
 
 
 
