@@ -46,3 +46,4 @@ func Timer_timedOut(doorTimedOut chan<- bool, movingTimedOut chan<- bool) {
 		}
 	}
 }
+
