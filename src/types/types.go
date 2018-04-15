@@ -71,9 +71,10 @@ const (
 
 
 type SyncArray struct {
-	AllElevators 	[]Elevator
-	HallStates 		[N_FLOORS][N_BUTTONS-1]HallReqStates
-	AckHallStates	[N_FLOORS][N_BUTTONS-1]map[string]bool
+    OwnerId         string
+    AllElevators    map[string]Elevator
+    HallStates      [N_FLOORS][N_BUTTONS-1]HallReqStates
+    AckHallStates   [N_FLOORS][N_BUTTONS-1]map[string]bool
 }
 
 type AssignerCompatibleElev struct {
