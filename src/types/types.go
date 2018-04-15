@@ -10,7 +10,7 @@ const (
 	BCASTPORT 		  = 30009	
 	N_FLOORS 		  = 4
 	N_BUTTONS		  = 3
-	DOOROPENDURATION  = float64(0.1) //skal være 3.0
+	DOOROPENDURATION  = float64(3.0) //skal være 3.0
 	MAXTRAVELDURATION = float64(5.0)
 )
 

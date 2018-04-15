@@ -6,6 +6,7 @@ import (
 	."SingleElevator/elevio"
 	."SingleElevator/timer"
 	//."SingleElevator/extPrc"
+	//"time"
 )
 
 
@@ -26,12 +27,13 @@ func SingleElevator(syncLocalElevator chan<- Elevator,
  	//initializing fmt, driverconnection and panellights
  	Fsm_init() 
 
+ 	const buffers int = 100
  	//setting up driver channels 
- 	drv_buttons  	:= make(chan ButtonEvent)
- 	drv_floors 	 	:= make(chan int)
- 	doorTimedOut 	:= make(chan bool)
- 	movingTimedOut  := make(chan bool)
- 	drv_stop	 	:= make(chan bool) 
+ 	drv_buttons  	:= make(chan ButtonEvent, buffers)
+ 	drv_floors 	 	:= make(chan int, buffers)
+ 	doorTimedOut 	:= make(chan bool, buffers)
+ 	movingTimedOut  := make(chan bool, buffers)
+ 	drv_stop	 	:= make(chan bool, buffers) 
 
  	//don't need this one yet 
  	//drv_obstr 	 := make(chan bool)

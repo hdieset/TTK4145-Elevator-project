@@ -5,6 +5,7 @@ import (
     "os/exec"
     "encoding/json"
     ."types"
+    "time"
 )
 
 func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan SyncArray, LocalElevatorID string){
@@ -15,7 +16,13 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
         //waiting for sync module to send new sync array
         newSyncArray := <- receiveSyncArray 
 
-        convertedSyncArray := syncArrayToAssignerConverter(newSyncArray) 
+        t := time.Now()
+		fmt.Println(t.String()," - Sync array for konvertering:")
+        fmt.Println(newSyncArray)
+        fmt.Println("****************************************************************")
+        convertedSyncArray := syncArrayToAssignerConverter(newSyncArray)
+        fmt.Println("Sync Array som sendes til Marshal:")
+        fmt.Println(convertedSyncArray)
 
         assignerInput,_ := json.Marshal(convertedSyncArray)
 
@@ -35,6 +42,9 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
         newOrderList.Local = formattedResult[LocalElevatorID]
         newOrderList.GlobalHallReq = convertedSyncArray.HallRequests 
 
+        fmt.Println("newOrderList som sendes til SingleElevator")
+        fmt.Println(newOrderList)
+
         //newOrderList.Local[0][B_Cab] = true 
 
 
@@ -44,7 +54,7 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
 }
 
 // Her var det mye fucky pointer drit
-func elevatorToAssignerConverter (inputElevator Elevator) AssignerCompatibleElev {
+func elevatorToAssignerConverter (inputElevator *Elevator) AssignerCompatibleElev {
 
     var convertedElev AssignerCompatibleElev
 
@@ -81,9 +91,11 @@ func elevatorToAssignerConverter (inputElevator Elevator) AssignerCompatibleElev
 
 func syncArrayToAssignerConverter (inputSyncArray SyncArray) AssignerCompatibleInput {
     convertedSyncArray := AssignerCompatibleInput{}
+    convertedSyncArray.States = make(map[string]*AssignerCompatibleElev)
+    //convertedSyncArray.States[LocalElevatorID]
 
     for elevIdIter := range inputSyncArray.AllElevators {
-        var cheesyTemp Elevator 
+        /*var cheesyTemp Elevator 
         cheesyTemp.Behaviour = inputSyncArray.AccessAllElevators(elevIdIter).Behaviour 
         cheesyTemp.Floor = inputSyncArray.AccessAllElevators(elevIdIter).Floor 
         cheesyTemp.Direction = inputSyncArray.AccessAllElevators(elevIdIter).Direction 
@@ -94,7 +106,11 @@ func syncArrayToAssignerConverter (inputSyncArray SyncArray) AssignerCompatibleI
         convertedSyncArray.AccessStates(elevIdIter).Direction = temp.Direction  
         convertedSyncArray.AccessStates(elevIdIter).CabRequests = temp.CabRequests    
         //convertedSyncArray.AccessStates(elevIdIter).Floor = -1 
-        //convertedSyncArray.States[elevIdIter] = elevatorToAssignerConverter(inputSyncArray.AllElevators[elevIdIter])
+        //convertedSyncArray.States[elevIdIter] = elevatorToAssignerConverter(inputSyncArray.AllElevators[elevIdIter])*/
+
+        temp := elevatorToAssignerConverter(inputSyncArray.AllElevators[elevIdIter])
+        convertedSyncArray.States[elevIdIter] = &temp
+
     } //over: bruke accessStates??? 
 
     for floors := 0; floors < N_FLOORS; floors++ {

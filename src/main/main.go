@@ -31,21 +31,22 @@ func main() {
 	localElevatorID := Network_generateID()
 	fmt.Println("Elevator ID: ", localElevatorID)
 
-	peerUpdateCh 		:= make(chan PeerUpdate)
-	peerTxEnable 		:= make(chan bool)  
-	networkTx 	 		:= make(chan SyncArray)
-	networkRx    		:= make(chan SyncArray)
-	syncLocalElevator 	:= make(chan Elevator)
-	syncButtonPress		:= make(chan ButtonEvent)
-	sendAssignedOrders 	:= make(chan AssignedOrders)
-	stopButtonPressed 	:= make(chan bool)
-	sendSyncArray		:= make(chan SyncArray)
+	const buffers int = 100
 
-	go Network(localElevatorID, peerTxEnable, peerUpdateCh, networkTx, networkRx)
+	peerUpdateCh 		:= make(chan PeerUpdate, buffers)
+	peerTxEnable 		:= make(chan bool, buffers)  
+	networkTx 	 		:= make(chan SyncArray, buffers)
+	networkRx    		:= make(chan SyncArray, buffers)
+	syncLocalElevator 	:= make(chan Elevator, buffers)
+	syncButtonPress		:= make(chan ButtonEvent, buffers)
+	sendAssignedOrders 	:= make(chan AssignedOrders, buffers)
+	stopButtonPressed 	:= make(chan bool, buffers)
+	sendSyncArray		:= make(chan SyncArray, buffers)
+
 	go SingleElevator(syncLocalElevator, syncButtonPress, sendAssignedOrders, stopButtonPressed, peerTxEnable) 
 	go Cost(sendAssignedOrders, sendSyncArray, localElevatorID)
 	go SyncModule(localElevatorID, peerUpdateCh, networkRx, networkTx, sendSyncArray, syncLocalElevator, syncButtonPress) 
-
+	go Network(localElevatorID, peerTxEnable, peerUpdateCh, networkTx, networkRx)
 
 	/*ticker := time.NewTicker(100*time.Millisecond)
 	for {
