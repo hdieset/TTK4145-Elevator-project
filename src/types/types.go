@@ -5,13 +5,13 @@ package types
 var Panelport string = "localhost:15657"
 
 const (
-	SIMULATOR		  = false
-	PEERPORT 		  = 20009
-	BCASTPORT 		  = 30009	
+	SIMULATOR		  = true
+	PEERPORT 		  = 20069
+	BCASTPORT 		  = 30069	
 	N_FLOORS 		  = 4
 	N_BUTTONS		  = 3
 	DOOROPENDURATION  = float64(3.0) 
-	MAXTRAVELDURATION = float64(5.0)
+	MAXTRAVELDURATION = float64(3.1)
 )
 
 type PeerUpdate struct {

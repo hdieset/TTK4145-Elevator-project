@@ -18,8 +18,8 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
         convertedSyncArray := syncArrayToAssignerConverter(newSyncArray)
 
         assignerInput,_ := json.Marshal(convertedSyncArray)
-
-        cmd := exec.Command("sh", "-c", dir+"/hall_request_assigner --input '" + string(assignerInput) + "' --includeCab ")
+       // fmt.Println("\n./hall_request_assigner --input '" + string(assignerInput) + "' --includeCab \n")
+        cmd := exec.Command("sh", "-c", dir+"/hall_request_assigner --input '" + string(assignerInput) + "' --includeCab " + " --clearRequestType=all ")
 
         result ,err := cmd.Output()
 
