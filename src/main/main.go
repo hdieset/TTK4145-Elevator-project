@@ -9,24 +9,14 @@ import(
 	"fmt"
 	"runtime"
 	."network/networkMain"
-	."SingleElevator/SingleElevatorMain"
-	//."SingleElevator/extPrc"
-	."Cost"
+	."singleElevator/singleElevatorMain"
+	."cost"
 	."types"
-	."SyncModule"
+	."syncModule"
 )
-
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU()) 
-
-/*	if SIMULATOR {
-		ExtPrc_changeElevatorSimPort()
-	} else {
-		ExtPrc_initElevatorServer()
-	}
-*/
-
 	localElevatorID := Network_generateID()
 	fmt.Println("Elevator ID: ", localElevatorID)
 
@@ -37,14 +27,14 @@ func main() {
 	networkTx 	 		:= make(chan SyncArray, buffers)
 	networkRx    		:= make(chan SyncArray, buffers)
 	syncLocalElevator 	:= make(chan Elevator, buffers)
-	syncButtonPress		:= make(chan ButtonEvent, buffers)
+	buttonPressCh		:= make(chan ButtonEvent, buffers)
 	sendAssignedOrders 	:= make(chan AssignedOrders, buffers)
 	stopButtonPressed 	:= make(chan bool, buffers)
 	sendSyncArray		:= make(chan SyncArray, buffers)
 
-	go SingleElevator(syncLocalElevator, syncButtonPress, sendAssignedOrders, stopButtonPressed, peerTxEnable) 
+	go SingleElevator(syncLocalElevator, buttonPressCh, sendAssignedOrders, stopButtonPressed, peerTxEnable) 
 	go Cost(sendAssignedOrders, sendSyncArray, localElevatorID)
-	go SyncModule(localElevatorID, peerUpdateCh, networkRx, networkTx, sendSyncArray, syncLocalElevator, syncButtonPress) 
+	go SyncModule(localElevatorID, peerUpdateCh, networkRx, networkTx, sendSyncArray, syncLocalElevator, buttonPressCh) 
 	go Network(localElevatorID, peerTxEnable, peerUpdateCh, networkTx, networkRx)
 	
 	for {
@@ -53,11 +43,4 @@ func main() {
 			return 
 		}
 	}
-
-	/*if !SIMULATOR {
-		ExtPrc_exitElevatorServer()
-	}*/
 }
-
-
-

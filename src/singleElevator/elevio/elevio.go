@@ -8,13 +8,12 @@ import (
 	."types"
 )
 
-const _pollRate = 20 * time.Millisecond  
+const _pollRate = 20 * time.Millisecond
 
 var _initialized bool = false
-var _numFloors int = N_FLOORS
 var _mtx sync.Mutex
 var _conn net.Conn
-
+var _numFloors = N_FLOORS
 
 func Elevio_init(addr string, numFloors int) {
 	if _initialized {
@@ -116,8 +115,6 @@ func Elevio_pollObstructionSwitch(receiver chan<- bool) {
 func Elevio_getInitialFloor() int {
 	return getFloor()
 }
-
-
 
 
 

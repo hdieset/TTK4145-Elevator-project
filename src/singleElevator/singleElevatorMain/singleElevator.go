@@ -1,28 +1,25 @@
-package SingleElevator
+package singleElevator
+
 import (
-	."SingleElevator/fsm"
+	."singleElevator/fsm"
 	"fmt"
 	."types"
-	."SingleElevator/elevio"
-	."SingleElevator/timer"
-	//."SingleElevator/extPrc"
-	//"time"
+	."singleElevator/elevio"
+	."singleElevator/timer"
 )
 
-
-func SingleElevator(syncLocalElevator chan<- Elevator, 
-	syncButtonPress chan<- ButtonEvent,
-	receiveAssignedOrders <-chan AssignedOrders,
-	stopButtonPressed chan<- bool,
-	network_peerTxEnable chan<- bool) {
+func SingleElevator(syncLocalElevator 		chan<- Elevator, 
+					syncButtonPress 		chan<- ButtonEvent,
+					receiveAssignedOrders 	<-chan AssignedOrders,
+					stopButtonPressed 		chan<- bool,
+					network_peerTxEnable 	chan<- bool) {
 
 	elevatorStuck := false 
 
- 	//initializing fmt, driverconnection and panellights
  	Fsm_init() 
 
  	const buffers int = 100
- 	//setting up driver channels 
+
  	drv_buttons  	:= make(chan ButtonEvent, buffers)
  	drv_floors 	 	:= make(chan int, buffers)
  	doorTimedOut 	:= make(chan bool, buffers)
@@ -61,7 +58,7 @@ func SingleElevator(syncLocalElevator chan<- Elevator,
 		case <- doorTimedOut:
 			Fsm_onDoorTimeout(syncLocalElevator) 
 
-		case <-movingTimedOut: 
+		case <- movingTimedOut: 
 			network_peerTxEnable <- false 
 			elevatorStuck = true 
 			fmt.Println("Aaaaaand we're stuck...")

@@ -1,38 +1,36 @@
 package elevator
 
 import (
-	//."SingleElevator/timer" 
 	"fmt"
 	."types" 
 )
 
 func eb_toString(eb ElevatorBehaviour) string {
 	switch eb {
-		case EB_Idle:
-			return "EB_Idle"
-		case EB_DoorOpen:
-			return "EB_DoorOpen" 
-		case EB_Moving:
-			return "EB_Moving"
-		default: 
-			return "EB_UNDEFINED"
+	case EB_Idle:
+		return "EB_Idle"
+	case EB_DoorOpen:
+		return "EB_DoorOpen" 
+	case EB_Moving:
+		return "EB_Moving"
+	default: 
+		return "EB_UNDEFINED"
 	}
 }
 
 func elevio_dirn_toString(d Dirn) string {
 	switch d {
-		case D_Up:
-			return "D_Up"
-		case D_Down:
-			return "D_Down" 
-		case D_Stop:
-			return "D_Stop"
-		default: 
-			return "D_UNDEFINED"
+	case D_Up:
+		return "D_Up"
+	case D_Down:
+		return "D_Down" 
+	case D_Stop:
+		return "D_Stop"
+	default: 
+		return "D_UNDEFINED"
 	}
 }
 
-//problemer med at button ikke er en enum, må fikse senere...
 func Elevator_print(es Elevator) {
 	p := fmt.Printf
 	p("  +--------------------+\n")

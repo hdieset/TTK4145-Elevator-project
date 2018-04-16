@@ -7,21 +7,18 @@ import (
     ."types"
 )
 
-func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan SyncArray, LocalElevatorID string){
-    //const dir string = "$GOPATH" + "/src/Cost" //dette vil ikke funke med executable(?), må endre gopath
+func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan SyncArray, LocalElevatorID string) {
     var newOrderList AssignedOrders 
 
     for {
-        //waiting for sync module to send new sync array
         newSyncArray := <- receiveSyncArray 
 
         convertedSyncArray := syncArrayToAssignerConverter(newSyncArray)
 
         assignerInput,_ := json.Marshal(convertedSyncArray)
-       // fmt.Println("\n./hall_request_assigner --input '" + string(assignerInput) + "' --includeCab \n")
-        cmd := exec.Command("sh", "-c", "./hall_request_assigner --input '" + string(assignerInput) + "' --includeCab ")
-        //cmd := exec.Command("sh", "-c", dir+"/hall_request_assigner --input '" + string(assignerInput) + "' --includeCab " )
 
+        cmd := exec.Command("sh", "-c", "./hall_request_assigner --input '" + string(assignerInput) + "' --includeCab ")
+    
         result ,err := cmd.Output()
 
         if err != nil {
@@ -32,18 +29,15 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
 
         json.Unmarshal(result, &formattedResult) 
 
-        //Assigning orders to local elevator and global hall requests for lights on panel
-        newOrderList.Local = formattedResult[LocalElevatorID]
+        // Adding all global hall requests in order to set correct panel lights 
         newOrderList.GlobalHallReq = convertedSyncArray.HallRequests 
-
-        //Sending new orders to local elevator
+        newOrderList.Local = formattedResult[LocalElevatorID]
+       
         sendAssignedOrders <- newOrderList
     }
 }
 
-// Her var det mye fucky pointer drit
 func elevatorToAssignerConverter (inputElevator Elevator) AssignerCompatibleElev {
-
     var convertedElev AssignerCompatibleElev
 
     switch inputElevator.Behaviour {
@@ -73,7 +67,7 @@ func elevatorToAssignerConverter (inputElevator Elevator) AssignerCompatibleElev
     for floors := 0; floors < N_FLOORS; floors++ {
         convertedElev.CabRequests[floors] = inputElevator.Requests[floors][B_Cab]
     }
-
+    
     return convertedElev
 }
 

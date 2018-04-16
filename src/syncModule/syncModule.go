@@ -7,31 +7,32 @@ import (
 )
 
 func SyncModule (localElevatorID string, 
-		peerUpdateCh <-chan PeerUpdate,
-		networkRx <-chan SyncArray,
-		networkTx chan<- SyncArray,
-		sendSyncArrayToCost chan<- SyncArray,
-		localElevatorCh <-chan Elevator, 
-		receivedButtonPress <-chan ButtonEvent) {
+				peerUpdateCh 		<-chan PeerUpdate,
+				networkRx 			<-chan SyncArray,
+				networkTx 			chan<- SyncArray,
+				sendSyncArrayToCost chan<- SyncArray,
+				localElevatorCh 	<-chan Elevator, 
+				receivedButtonPress <-chan ButtonEvent) {
 	
 	var isAlone bool
 	var initialized bool = false
 	localSyncArray := initLocalSyncArray(localElevatorID)
-	ticker := time.NewTicker(200*time.Millisecond) //200 er nice
-	time.Sleep(500*time.Millisecond) //la til denne 
+
+	ticker := time.NewTicker(200 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
+
 	for {
 		select { 
 		case newPeerList := <- peerUpdateCh:
 			fmt.Printf("Case: new peer list: %+v\n", newPeerList)
-			// Deleting lost Elevators from local sync array
-			//fjerne alle ackd fra LocalSyncArray hvis peer er lost
 			
+			// Deleting lost Elevators from local sync array
 			for iter := 0; iter < len(newPeerList.Lost); iter++ {
 				lostId := newPeerList.Lost[iter]
 				if lostId != localElevatorID { 
 		            delete(localSyncArray.AllElevators, lostId)
             	}
-				//delete acks from disconnected elevators
+				// Delete acks from disconnected elevators
 				for floors := 0; floors < N_FLOORS; floors++ {
 					for btn := 0; btn < N_BUTTONS-1; btn++ {
 						delete(localSyncArray.AckHallStates[floors][btn], lostId)
@@ -40,8 +41,8 @@ func SyncModule (localElevatorID string,
 			}
 
 			if len(newPeerList.Peers) == 1 {
-				// Set flag if this elevator is disconnected from all others
-				isAlone = true 
+				isAlone = true
+
 				// Set non-confirmed Hallorders to unknown state.
 				for floor := 0; floor < N_FLOORS; floor++ {
 					for btn := 0; btn < N_BUTTONS-1; btn++ {
@@ -51,31 +52,37 @@ func SyncModule (localElevatorID string,
 					}
 				}
 
+				// Clear all acks
 				tempSyncArray := initLocalSyncArray(localElevatorID)
-				localSyncArray.AckHallStates = tempSyncArray.AckHallStates 
+				localSyncArray.AckHallStates = tempSyncArray.AckHallStates
 			} else {
 				isAlone = false
 			}
 
+		case recievedLocalElev := <- localElevatorCh: 
+			if !initialized { 
+				initialized = true
+			}
+
+			// Only send recieved elevator to cost if an order is completed
+			// in order to disable hall lights and avoid looping
+            temp := localSyncArray
+            localSyncArray.AllElevators[localElevatorID] = recievedLocalElev
+			localSyncArray = completeOrders(recievedLocalElev, localSyncArray, localElevatorID, isAlone)
+			if temp.HallStates != localSyncArray.HallStates {
+				sendSyncArrayToCost <- localSyncArray
+			}
+
 		case recievedSyncArray := <- networkRx:
-            /*for k, v := range recievedSyncArray.AllElevators {
-                fmt.Printf("  Received Elevator %+v  :  %+v\n", k, v)
-            }*/
-			//fmt.Printf("\n      Received sync array from: %+v\n\n", recievedSyncArray.OwnerId)
-			if initialized { //kan dette løses med peerTxenable? ELLER KAN VI FLYTTE  ?? 
-				//the owner of a SyncArray will always have it's own Elevator struct at index 0 in .AllElevators
-				//fmt.Println("Lengde på recievedSyncArray.AllElevators:", len(recievedSyncArray.AllElevators))
-				
+			if initialized {
                 // Add/update received elevator states
                 for k, v := range recievedSyncArray.AllElevators {
                     if k != localElevatorID {
-                        //fmt.Println("remote key", k)
                         localSyncArray.AllElevators[k] = v
                     }
                 }
 
 				localSyncArray = updateHallStates(recievedSyncArray, localSyncArray, localElevatorID) 
-
 				sendSyncArrayToCost <- localSyncArray 
 			}
 
@@ -85,40 +92,9 @@ func SyncModule (localElevatorID string,
 				sendSyncArrayToCost <- localSyncArray
 			}
 
-		case recievedLocalElev := <- localElevatorCh: 
-			//fmt.Printf("Case: new local state: %+v\n", recievedLocalElev)
-        
-			//KAN VI FLYTTE DENNE TIL OVER FOR SELECTEN??????????????????????????????????????????????????????????
-        /*    _temp := localSyncArray.AllElevators[localElevatorID]
-            recievedLocalElev.Requests = _temp.Requests
-            recievedLocalElev.CompletedReq = _temp.CompletedReq*/
-            temp := localSyncArray
-            localSyncArray.AllElevators[localElevatorID] = recievedLocalElev
-
-			if !initialized { 
-				initialized = true
-			}
-
-				// only send recieved elevator to cost if an order is completed - in order to disable hall lights.
-			localSyncArray = completeOrders(recievedLocalElev, localSyncArray, localElevatorID, isAlone)
-			if temp.HallStates != localSyncArray.HallStates {
-				sendSyncArrayToCost <- localSyncArray
-			}
-
-		case <-ticker.C:
+		case <- ticker.C:
 			if initialized {
-                /*fmt.Printf("      Sending localSyncArray. This peer knows of: ")
-                for k, _ := range localSyncArray.AllElevators {
-                    fmt.Printf("  %+v ", k)
-                }
-                fmt.Printf("\n")
-                */
 				networkTx <- localSyncArray 
-				//fmt.Println(localSyncArray.HallStates)
-				//fmt.Println("Lengde på AllElevators:", len(localSyncArray.AllElevators))
-				//fmt.Println("Lengde på AckHallStates", len(localSyncArray.AckHallStates[1][B_HallDown]))
-				//printSyncArray(localSyncArray)
-
 			}
 		}
 	}
@@ -128,7 +104,8 @@ func initLocalSyncArray(owner string) SyncArray {
 	localSyncArray := SyncArray{} 
 	localSyncArray.OwnerId = owner
 	localSyncArray.AllElevators = make(map[string]Elevator)
-	//set all hall states to unknown in case of reboot
+
+	// Set all hall states to unknown in case of reboot
 	for floors := 0; floors < N_FLOORS; floors++ {
 		for btn := 0; btn < N_BUTTONS-1; btn++ {
 			localSyncArray.HallStates[floors][btn] = Hall_unknown
@@ -144,15 +121,16 @@ func updateHallStates(recievedSyncArray SyncArray, localSyncArray SyncArray, loc
 
 	for floors := 0; floors < N_FLOORS; floors++ {
 		for btn := 0; btn < N_BUTTONS-1; btn++ {
-			if recAck := recievedSyncArray.AckHallStates[floors][btn][senderID]; recAck == true {
-				localSyncArray.AckHallStates[floors][btn][senderID] = recAck
+			if recievedSyncArray.AckHallStates[floors][btn][senderID] == true {
+				localSyncArray.AckHallStates[floors][btn][senderID] = true
 			}
 
+			// State machine for confirming hall orders to ensure redundancy
 			switch recievedSyncArray.HallStates[floors][btn] {
 			case Hall_none: 
 				if localSyncArray.HallStates[floors][btn] == Hall_confirmed {
 					localSyncArray.HallStates[floors][btn] = Hall_none
-					//Delete entire Ack list for that floor and button
+					// Delete entire Ack list for that floor and button
 				    localSyncArray.AckHallStates[floors][btn] = make(map[string]bool)
 
 				} else if localSyncArray.HallStates[floors][btn] == Hall_unknown {
@@ -187,11 +165,10 @@ func updateHallStates(recievedSyncArray SyncArray, localSyncArray SyncArray, loc
 			}
 		}
 	}
+
 	return localSyncArray 
 }
 
-
-// plsfix these two with reflect (also give me templates damnit)
 func acksKeys(acks map[string]bool) []string {
     keys := make([]string, len(acks))
     i := 0
@@ -201,6 +178,7 @@ func acksKeys(acks map[string]bool) []string {
     }
     return keys
 }
+
 func elevatorsKeys(acks map[string]Elevator) []string {
     keys := make([]string, len(acks))
     i := 0
@@ -211,9 +189,9 @@ func elevatorsKeys(acks map[string]Elevator) []string {
     return keys
 }
 
-
+// For comparing the number of elevators that is both online and have acked
 func allAliveAckd(acks []string, elevators []string) bool {
-	if (len(acks) >= len(elevators)) && (elevators != nil) { //må elevators > 1?
+	if (len(acks) >= len(elevators)) && (elevators != nil) {
 		result := true
 		for _, i := range elevators {
 			r := false
@@ -228,34 +206,33 @@ func allAliveAckd(acks []string, elevators []string) bool {
 		}
 		return result
 	}
+
 	return false
 }
 
-
-
-func addOrders(newBtnEvent ButtonEvent, localSyncArray SyncArray, localElevatorID string, isAlone bool) SyncArray {  //dumt navn 
+func addOrders(newBtnEvent ButtonEvent, localSyncArray SyncArray, localElevatorID string, isAlone bool) SyncArray { 
 	if newBtnEvent.Button == B_Cab {
         e := localSyncArray.AllElevators[localElevatorID]
 		e.Requests[newBtnEvent.Floor][B_Cab] = true 
         localSyncArray.AllElevators[localElevatorID] = e
 	} else if !isAlone { 
-		localSyncArray.HallStates[newBtnEvent.Floor][newBtnEvent.Button] = Hall_unconfirmed //skal være unconfirmed 
+		localSyncArray.HallStates[newBtnEvent.Floor][newBtnEvent.Button] = Hall_unconfirmed
 		localSyncArray.AckHallStates[newBtnEvent.Floor][newBtnEvent.Button][localElevatorID] = true
 	}
+
 	return localSyncArray 
 }
 
-
-func completeOrders(updatedLocalElev Elevator, localSyncArray SyncArray, localElevatorID string, isAlone bool) SyncArray {  //dumt navn
+func completeOrders(updatedLocalElev Elevator, localSyncArray SyncArray, localElevatorID string, isAlone bool) SyncArray { 
 	for floors := 0; floors < N_FLOORS; floors++ {
-		//remove completed cab requests from local Elevator in localSyncArray
+		// Remove completed cab requests from local Elevator in localSyncArray
 		if updatedLocalElev.CompletedReq[floors][B_Cab] == true {        
             e := localSyncArray.AllElevators[localElevatorID]
             e.Requests[floors][B_Cab] = false 
             localSyncArray.AllElevators[localElevatorID] = e
 		}
 
-		//remove completed hall orders
+		// Remove completed hall orders
 		for btn := 0; btn < N_BUTTONS-1; btn++ { 
 			if updatedLocalElev.CompletedReq[floors][btn] {
 				if isAlone {
@@ -264,21 +241,14 @@ func completeOrders(updatedLocalElev Elevator, localSyncArray SyncArray, localEl
 					localSyncArray.HallStates[floors][btn] = Hall_none
 				}
 				
-				//Delete entire Ack list for that floor and button
+				// Delete entire Ack list for that floor and button
 				localSyncArray.AckHallStates[floors][btn] = make(map[string]bool)
 			} 
 		}
 	}
+
 	return localSyncArray
 }
-
-
-
-func remove(e []Elevator, i int) []Elevator { //REMOVE ???? 
-    e[len(e)-1], e[i] = e[i], e[len(e)-1]
-    return e[:len(e)-1]
-}
-
 
 func printSyncArray(localSyncArray SyncArray) {
 	fmt.Println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")

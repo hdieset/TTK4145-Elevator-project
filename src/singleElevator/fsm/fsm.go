@@ -1,11 +1,11 @@
 package fsm 
 
 import (
-	."SingleElevator/elevator"
-	."SingleElevator/timer"
+	."singleElevator/elevator"
+	."singleElevator/timer"
 	."types"
-	."SingleElevator/elevio"
-	."SingleElevator/requests"
+	."singleElevator/elevio"
+	."singleElevator/requests"
 	"fmt"
 	"os"
 	"io/ioutil"
@@ -27,29 +27,26 @@ func Fsm_onInitBetweenFloors() {
 	Elevio_setMotorDirection(D_Down)
 	elevator.Direction = D_Down
 	elevator.Behaviour = EB_Moving
-	//Timer_movingStart(MAXTRAVELDURATION) // Denne bør vel være her????????????????
 }
 
 func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<- Elevator) {
-	//declare flag for special cases
+	// Declare flag for special cases
 	var idleAtFloor bool = false
 	var doorOpenAtFloor bool = false 
 
-	//clear old elevator.Requests
+	// Clear old elevator.Requests
 	var emptyOrderList [N_FLOORS][N_BUTTONS] bool
 	elevator.Requests = emptyOrderList
 
-	//add new orders to elevator.Requests 
+	// Add new orders
 	for floor := 0; floor < N_FLOORS; floor++ {
 		for buttons := 0; buttons < N_BUTTONS; buttons++ {
 			if newOrders.Local[floor][buttons] {
-
 				switch elevator.Behaviour {
 				case EB_DoorOpen: 
 					if elevator.Floor == floor {
 						doorOpenAtFloor = true 
 						elevator.CompletedReq[floor][buttons] = true 
-						//elevator.Requests[floor][buttons] = false -------------- er allerede false 
 					} else {
 						elevator.Requests[floor][buttons] = true
 					}
@@ -61,7 +58,6 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 					if elevator.Floor == floor {
 						idleAtFloor = true
 						elevator.CompletedReq[floor][buttons] = true
-						//elevator.Requests[floor][buttons] = false
 					} else {
 						elevator.Requests[floor][buttons] = true
 					}	
@@ -71,39 +67,42 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 	}
 
 	prevDir := elevator.Direction
+	elevator.Direction = Requests_chooseDirection(elevator)
+
 	if doorOpenAtFloor {
 		Timer_doorStart(elevator.DoorOpenDuration_s) 
 	} else if idleAtFloor {
 		Elevio_setDoorOpenLamp(true)
 		Timer_doorStart(elevator.DoorOpenDuration_s)
 		elevator.Behaviour = EB_DoorOpen
-	} else if elevator.Direction = Requests_chooseDirection(elevator); (elevator.Direction != D_Stop) && (elevator.Direction != prevDir) && (elevator.Behaviour != EB_DoorOpen) {
+
+		// We want to prevent the elevator of driving with an open door, 
+		// and also not restart the stuckTimer (when stuck) everytime the function is called 
+		// because of updates from other elevators 
+	} else if (elevator.Direction != D_Stop) && (elevator.Behaviour != EB_DoorOpen) && (elevator.Direction != prevDir) {
 		Elevio_setMotorDirection(elevator.Direction)
 		elevator.Behaviour = EB_Moving
-		Timer_movingStart(MAXTRAVELDURATION)
+		Timer_stuckStart(MAXTRAVELDURATION)
 	}
 
 	saveCabOrders(elevator.Requests)
 	setAllCabLights()
 	setAllHallLights(newOrders)
-	//fmt.Println("\nNew state:")
-	//Elevator_print(elevator)
 	sendLocalElevator(syncLocalElevator)
 }
 
 func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 	fmt.Println("Arrived at floor", newFloor)
-	
-	Timer_movingStart(MAXTRAVELDURATION) 
+
+	Timer_stuckStart(MAXTRAVELDURATION)
 
 	elevator.Floor = newFloor
-
 	Elevio_setFloorIndicator(elevator.Floor)
 
 	switch elevator.Behaviour {
 	case EB_Moving:
 		if Requests_shouldStop(elevator) {
-			Timer_movingStop()
+			Timer_stuckStop()
 			Elevio_setMotorDirection(D_Stop)
 			Elevio_setDoorOpenLamp(true)
 			elevator = Requests_clearAtCurrentFloor(elevator)
@@ -112,9 +111,10 @@ func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 			setAllCabLights()
 			elevator.Behaviour = EB_DoorOpen
 		}
-	//If the elevator is initialized on a floor, then stuck timer stops 	
+
+	//If the elevator is initialized on a floor, then the stuck timer should stop	
 	case EB_Idle: 
-		Timer_movingStop()
+		Timer_stuckStop()
 	default:
 	}
 
@@ -123,7 +123,6 @@ func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 
 func Fsm_onDoorTimeout(syncLocalElevator chan<- Elevator) {
 	fmt.Println("Door closed")
-	//Elevator_print(elevator)
 
 	switch elevator.Behaviour {
 	case EB_DoorOpen:
@@ -135,7 +134,7 @@ func Fsm_onDoorTimeout(syncLocalElevator chan<- Elevator) {
 			elevator.Behaviour = EB_Idle
 		} else {
 			elevator.Behaviour = EB_Moving
-			Timer_movingStart(MAXTRAVELDURATION)
+			Timer_stuckStart(MAXTRAVELDURATION)
 		}
 	default:
 	}
@@ -160,9 +159,8 @@ func setAllCabLights() {
 
 func sendLocalElevator(syncLocalElevator chan<- Elevator) {
 	syncLocalElevator <- elevator 
-	//clear old elevator.CompletedReq
-	var emptyOrderList [N_FLOORS][N_BUTTONS] bool
-	elevator.CompletedReq = emptyOrderList
+	// Clear old elevator.CompletedReq
+	elevator.CompletedReq = [N_FLOORS][N_BUTTONS]bool{}
 }
 
 func readBackupCabOrders() [N_FLOORS][N_BUTTONS]bool {
@@ -178,6 +176,7 @@ func readBackupCabOrders() [N_FLOORS][N_BUTTONS]bool {
 	        }
     	}
 	}
+	
     return output
 }
 

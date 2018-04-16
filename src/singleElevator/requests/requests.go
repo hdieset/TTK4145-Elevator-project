@@ -2,7 +2,6 @@ package requests
 
 import ."types"
 
-
 func requests_above(e Elevator) bool {
 	for f := e.Floor + 1; f < N_FLOORS; f++ {
 		for btn := 0; btn < N_BUTTONS; btn++ {
@@ -45,6 +44,7 @@ func Requests_chooseDirection(e Elevator) Dirn {
 		} else {
 			return D_Stop
 		}
+		
 	default:
 		return D_Stop
 	}
@@ -76,6 +76,7 @@ func Requests_clearAtCurrentFloor(e Elevator) Elevator {
 			e.Requests[e.Floor][B_HallDown] = false
 			e.CompletedReq[e.Floor][B_HallDown] = true
 		}
+
 	case D_Down:
 		e.Requests[e.Floor][B_HallDown] = false
 		e.CompletedReq[e.Floor][B_HallDown] = true
@@ -83,13 +84,16 @@ func Requests_clearAtCurrentFloor(e Elevator) Elevator {
 			e.Requests[e.Floor][B_HallUp] = false
 			e.CompletedReq[e.Floor][B_HallUp] = true
 		}
+
 	case D_Stop:
 		fallthrough
+
 	default:
 		e.Requests[e.Floor][B_HallUp] = false
 		e.Requests[e.Floor][B_HallDown] = false
 		e.CompletedReq[e.Floor][B_HallUp] = true
 		e.CompletedReq[e.Floor][B_HallDown] = true
 	}
+
 	return e
 }
