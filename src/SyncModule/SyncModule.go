@@ -17,7 +17,7 @@ func SyncModule (localElevatorID string,
 	var isAlone bool
 	var initialized bool = false
 	localSyncArray := initLocalSyncArray(localElevatorID)
-	ticker := time.NewTicker(200*time.Millisecond)
+	ticker := time.NewTicker(200*time.Millisecond) //200 er nice
 	time.Sleep(500*time.Millisecond) //la til denne 
 	for {
 		select { 
@@ -88,8 +88,11 @@ func SyncModule (localElevatorID string,
 			//fmt.Printf("Case: new local state: %+v\n", recievedLocalElev)
         
 			//KAN VI FLYTTE DENNE TIL OVER FOR SELECTEN??????????????????????????????????????????????????????????
-            
+        /*    _temp := localSyncArray.AllElevators[localElevatorID]
+            recievedLocalElev.Requests = _temp.Requests
+            recievedLocalElev.CompletedReq = _temp.CompletedReq*/
             localSyncArray.AllElevators[localElevatorID] = recievedLocalElev
+
 			if !initialized { 
 				initialized = true
 			}
@@ -209,7 +212,7 @@ func elevatorsKeys(acks map[string]Elevator) []string {
 
 
 func allAliveAckd(acks []string, elevators []string) bool {
-	if (len(acks) >= len(elevators)) && (elevators != nil) {
+	if (len(acks) >= len(elevators)) && (elevators != nil) { //må elevators > 1?
 		result := true
 		for _, i := range elevators {
 			r := false
@@ -270,10 +273,11 @@ func completeOrders(updatedLocalElev Elevator, localSyncArray SyncArray, localEl
 
 
 
-func remove(e []Elevator, i int) []Elevator {
+func remove(e []Elevator, i int) []Elevator { //REMOVE ???? 
     e[len(e)-1], e[i] = e[i], e[len(e)-1]
     return e[:len(e)-1]
 }
+
 
 func printSyncArray(localSyncArray SyncArray) {
 	fmt.Println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
@@ -284,7 +288,7 @@ func printSyncArray(localSyncArray SyncArray) {
 		fmt.Println("Requests    :",localSyncArray.AllElevators[i].Requests)
 		fmt.Println("CompletedReq:",localSyncArray.AllElevators[i].CompletedReq)
 		fmt.Println("Behaviour   :",localSyncArray.AllElevators[i].Behaviour)
-		fmt.Println("ID          :",localSyncArray.AllElevators[i].Id)
+		fmt.Println("ID          :",i)
 		fmt.Println("-------------------------------------------------------")
 	}
 	fmt.Println("HallStates: ")

@@ -80,9 +80,9 @@ func syncArrayToAssignerConverter (inputSyncArray SyncArray) AssignerCompatibleI
     convertedSyncArray := AssignerCompatibleInput{}
     convertedSyncArray.States = make(map[string]*AssignerCompatibleElev)
 
-    for elevIter := range inputSyncArray.AllElevators { 
-        temp := elevatorToAssignerConverter(inputSyncArray.AllElevators[elevIter]) 
-        convertedSyncArray.States[inputSyncArray.AllElevators[elevIter].Id] = &temp
+    for elevId := range inputSyncArray.AllElevators { 
+        temp := elevatorToAssignerConverter(inputSyncArray.AllElevators[elevId]) 
+        convertedSyncArray.States[elevId] = &temp
     } 
 
     for floors := 0; floors < N_FLOORS; floors++ {
