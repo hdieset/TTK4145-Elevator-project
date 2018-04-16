@@ -25,11 +25,12 @@ func SyncModule (localElevatorID string,
 			fmt.Printf("Case: new peer list: %+v\n", newPeerList)
 			// Deleting lost Elevators from local sync array
 			//fjerne alle ackd fra LocalSyncArray hvis peer er lost
-
+			
 			for iter := 0; iter < len(newPeerList.Lost); iter++ {
 				lostId := newPeerList.Lost[iter]
-                delete(localSyncArray.AllElevators, lostId)
-
+				if lostId != localElevatorID { 
+		            delete(localSyncArray.AllElevators, lostId)
+            	}
 				//delete acks from disconnected elevators
 				for floors := 0; floors < N_FLOORS; floors++ {
 					for btn := 0; btn < N_BUTTONS-1; btn++ {

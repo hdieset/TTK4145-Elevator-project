@@ -6,8 +6,8 @@ var Panelport string = "localhost:15657"
 
 const (
 	SIMULATOR		  = false
-	PEERPORT 		  = 20069
-	BCASTPORT 		  = 30069	
+	PEERPORT 		  = 20258
+	BCASTPORT 		  = 30258	
 	N_FLOORS 		  = 4
 	N_BUTTONS		  = 3
 	DOOROPENDURATION  = float64(3.0) 

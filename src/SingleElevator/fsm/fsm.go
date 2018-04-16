@@ -7,12 +7,15 @@ import (
 	."SingleElevator/elevio"
 	."SingleElevator/requests"
 	"fmt"
+	"os"
+	"io/ioutil"
 )
 
 var elevator Elevator 
 
 func Fsm_init() {
 	elevator = Elevator_uninitialized()
+	elevator.Requests = readBackupCabOrders()
 	Elevio_init(Panelport,N_FLOORS)
 	Elevio_setStopLamp(true)
 	Elevio_setDoorOpenLamp(false)
@@ -74,14 +77,15 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 		Elevio_setDoorOpenLamp(true)
 		Timer_doorStart(elevator.DoorOpenDuration_s)
 		elevator.Behaviour = EB_DoorOpen
-	} else if elevator.Direction = Requests_chooseDirection(elevator); elevator.Direction != D_Stop && elevator.Direction != prevDir {
+	} else if elevator.Direction = Requests_chooseDirection(elevator); (elevator.Direction != D_Stop) && (elevator.Direction != prevDir) && (elevator.Behaviour != EB_DoorOpen) {
 		Elevio_setMotorDirection(elevator.Direction)
 		elevator.Behaviour = EB_Moving
 		Timer_movingStart(MAXTRAVELDURATION)
 	}
 
-	setAllHallLights(newOrders)
+	saveCabOrders(elevator.Requests)
 	setAllCabLights()
+	setAllHallLights(newOrders)
 	//fmt.Println("\nNew state:")
 	//Elevator_print(elevator)
 	sendLocalElevator(syncLocalElevator)
@@ -103,7 +107,8 @@ func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 			Elevio_setMotorDirection(D_Stop)
 			Elevio_setDoorOpenLamp(true)
 			elevator = Requests_clearAtCurrentFloor(elevator)
-			Timer_doorStart(elevator.DoorOpenDuration_s) //endre til consten?? 
+			Timer_doorStart(elevator.DoorOpenDuration_s)
+			saveCabOrders(elevator.Requests)
 			setAllCabLights()
 			elevator.Behaviour = EB_DoorOpen
 		}
@@ -158,4 +163,37 @@ func sendLocalElevator(syncLocalElevator chan<- Elevator) {
 	//clear old elevator.CompletedReq
 	var emptyOrderList [N_FLOORS][N_BUTTONS] bool
 	elevator.CompletedReq = emptyOrderList
+}
+
+func readBackupCabOrders() [N_FLOORS][N_BUTTONS]bool {
+    var output [N_FLOORS][N_BUTTONS]bool
+
+    b, err := ioutil.ReadFile("cabBackup.txt")
+    if err != nil {
+        saveCabOrders([N_FLOORS][N_BUTTONS]bool{})
+    } else {
+    	for i := 0; i < N_FLOORS; i++ {
+	        if b[i] == 49 {
+	            output[i][B_Cab] = true
+	        }
+    	}
+	}
+    return output
+}
+
+func saveCabOrders(input [N_FLOORS][N_BUTTONS]bool) {
+    file, err := os.Create("cabBackup.txt")
+    if err != nil {
+        fmt.Println("Cannot create file", err)
+    } else {
+        defer file.Close()
+
+        for i := 0; i < N_FLOORS; i++ {
+            if input[i][B_Cab] == true {
+                fmt.Fprintf(file, "1")
+            } else {
+                fmt.Fprintf(file, "0")
+            }
+        }
+    }
 }
