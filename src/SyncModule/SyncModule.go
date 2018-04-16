@@ -60,15 +60,15 @@ func SyncModule (localElevatorID string,
             /*for k, v := range recievedSyncArray.AllElevators {
                 fmt.Printf("  Received Elevator %+v  :  %+v\n", k, v)
             }*/
-			fmt.Printf("\n      Received sync array from: %+v\n\n", recievedSyncArray.OwnerId)
+			//fmt.Printf("\n      Received sync array from: %+v\n\n", recievedSyncArray.OwnerId)
 			if initialized { //kan dette løses med peerTxenable? ELLER KAN VI FLYTTE  ?? 
 				//the owner of a SyncArray will always have it's own Elevator struct at index 0 in .AllElevators
-				fmt.Println("Lengde på recievedSyncArray.AllElevators:", len(recievedSyncArray.AllElevators))
+				//fmt.Println("Lengde på recievedSyncArray.AllElevators:", len(recievedSyncArray.AllElevators))
 				
                 // Add/update received elevator states
                 for k, v := range recievedSyncArray.AllElevators {
                     if k != localElevatorID {
-                        fmt.Println("remote key", k)
+                        //fmt.Println("remote key", k)
                         localSyncArray.AllElevators[k] = v
                     }
                 }
@@ -91,6 +91,7 @@ func SyncModule (localElevatorID string,
         /*    _temp := localSyncArray.AllElevators[localElevatorID]
             recievedLocalElev.Requests = _temp.Requests
             recievedLocalElev.CompletedReq = _temp.CompletedReq*/
+            temp := localSyncArray
             localSyncArray.AllElevators[localElevatorID] = recievedLocalElev
 
 			if !initialized { 
@@ -98,7 +99,6 @@ func SyncModule (localElevatorID string,
 			}
 
 				// only send recieved elevator to cost if an order is completed - in order to disable hall lights.
-			temp := localSyncArray
 			localSyncArray = completeOrders(recievedLocalElev, localSyncArray, localElevatorID, isAlone)
 			if temp.HallStates != localSyncArray.HallStates {
 				sendSyncArrayToCost <- localSyncArray
@@ -106,12 +106,12 @@ func SyncModule (localElevatorID string,
 
 		case <-ticker.C:
 			if initialized {
-                fmt.Printf("      Sending localSyncArray. This peer knows of: ")
+                /*fmt.Printf("      Sending localSyncArray. This peer knows of: ")
                 for k, _ := range localSyncArray.AllElevators {
                     fmt.Printf("  %+v ", k)
                 }
                 fmt.Printf("\n")
-                
+                */
 				networkTx <- localSyncArray 
 				//fmt.Println(localSyncArray.HallStates)
 				//fmt.Println("Lengde på AllElevators:", len(localSyncArray.AllElevators))

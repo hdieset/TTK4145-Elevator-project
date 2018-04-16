@@ -34,6 +34,8 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 	var emptyOrderList [N_FLOORS][N_BUTTONS] bool
 	elevator.Requests = emptyOrderList
 
+	fmt.Println("Elevator Behaviour:", elevator.Behaviour)
+
 	//add new orders to elevator.Requests 
 	for floor := 0; floor < N_FLOORS; floor++ {
 		for buttons := 0; buttons < N_BUTTONS; buttons++ {
@@ -44,6 +46,7 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 					if elevator.Floor == floor {
 						doorOpenAtFloor = true 
 						elevator.CompletedReq[floor][buttons] = true 
+						//elevator.Requests[floor][buttons] = false -------------- er allerede false 
 					} else {
 						elevator.Requests[floor][buttons] = true
 					}
@@ -52,9 +55,12 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 					elevator.Requests[floor][buttons] = true 
 
 				case EB_Idle:
+					fmt.Println("Case EB_Idle")
 					if elevator.Floor == floor {
 						idleAtFloor = true
 						elevator.CompletedReq[floor][buttons] = true
+						fmt.Println("Idle at floor = true**************************************")
+						//elevator.Requests[floor][buttons] = false
 					} else {
 						elevator.Requests[floor][buttons] = true
 					}	
@@ -68,13 +74,15 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 	} 
 
 	if idleAtFloor {
+		fmt.Println("Gikk inn i if setning - idleAtFloor*******************************")
 		Elevio_setDoorOpenLamp(true)
 		Timer_doorStart(elevator.DoorOpenDuration_s)
 		elevator.Behaviour = EB_DoorOpen
-	} else {
-		elevator.Direction = Requests_chooseDirection(elevator)
-		Elevio_setMotorDirection(elevator.Direction)
-		elevator.Behaviour = EB_Moving
+	} else if elevator.Behaviour != EB_DoorOpen {
+		if elevator.Direction = Requests_chooseDirection(elevator); elevator.Direction != D_Stop {
+			Elevio_setMotorDirection(elevator.Direction)
+			elevator.Behaviour = EB_Moving
+		}
 		//Timer_movingStart(MAXTRAVELDURATION) // LAGT TIL HER ??????????????????!!!!!!!!!
 	}
 
@@ -124,6 +132,7 @@ func Fsm_onDoorTimeout(syncLocalElevator chan<- Elevator) {
 		Elevio_setMotorDirection(elevator.Direction)
 
 		if elevator.Direction == D_Stop {
+			fmt.Println("doorTimed out: Behaviour is set to IDLE")
 			elevator.Behaviour = EB_Idle
 		} else {
 			elevator.Behaviour = EB_Moving
