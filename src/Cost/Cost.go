@@ -8,7 +8,7 @@ import (
 )
 
 func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan SyncArray, LocalElevatorID string){
-    const dir string = "$GOPATH" + "/src/Cost" //dette vil ikke funke med executable(?), må endre gopath
+    //const dir string = "$GOPATH" + "/src/Cost" //dette vil ikke funke med executable(?), må endre gopath
     var newOrderList AssignedOrders 
 
     for {
@@ -19,7 +19,8 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
 
         assignerInput,_ := json.Marshal(convertedSyncArray)
        // fmt.Println("\n./hall_request_assigner --input '" + string(assignerInput) + "' --includeCab \n")
-        cmd := exec.Command("sh", "-c", dir+"/hall_request_assigner --input '" + string(assignerInput) + "' --includeCab " + " --clearRequestType=all ")
+        cmd := exec.Command("sh", "-c", "./hall_request_assigner --input '" + string(assignerInput) + "' --includeCab ")
+        //cmd := exec.Command("sh", "-c", dir+"/hall_request_assigner --input '" + string(assignerInput) + "' --includeCab " + " --clearRequestType=all ")
 
         result ,err := cmd.Output()
 
@@ -86,11 +87,11 @@ func syncArrayToAssignerConverter (inputSyncArray SyncArray) AssignerCompatibleI
     } 
 
     for floors := 0; floors < N_FLOORS; floors++ {
-    	for btn := 0; btn < N_BUTTONS-1; btn++ {
-	        if inputSyncArray.HallStates[floors][btn] == Hall_confirmed {
-	            convertedSyncArray.HallRequests[floors][btn] = true
-	        }
-      	}
+        for btn := 0; btn < N_BUTTONS-1; btn++ {
+            if inputSyncArray.HallStates[floors][btn] == Hall_confirmed {
+                convertedSyncArray.HallRequests[floors][btn] = true
+            }
+        }
     }
 
     return convertedSyncArray 
