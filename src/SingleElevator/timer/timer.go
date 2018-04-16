@@ -18,9 +18,9 @@ func get_wall_time() float64 {
 func Timer_doorStart(duration_s float64) {
 	doorTimerEndTime = get_wall_time() + duration_s
 	doorTimerActive = true;
-}
+} 
 
-func Timer_movingStart(duration_s float64) {
+func Timer_movingStart(duration_s float64) { //Timer_stuck ?? 
 	movingTimerEndTime = get_wall_time() + duration_s
 	movingTimerActive = true;
 }

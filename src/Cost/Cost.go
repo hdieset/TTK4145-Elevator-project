@@ -18,8 +18,8 @@ func Cost(sendAssignedOrders chan<- AssignedOrders, receiveSyncArray <-chan Sync
         convertedSyncArray := syncArrayToAssignerConverter(newSyncArray)
 
         assignerInput,_ := json.Marshal(convertedSyncArray)
-
-        cmd := exec.Command("sh", "-c", dir+"/hall_request_assigner --input '" + string(assignerInput) + "' --includeCab ")
+       // fmt.Println("\n./hall_request_assigner --input '" + string(assignerInput) + "' --includeCab \n")
+        cmd := exec.Command("sh", "-c", dir+"/hall_request_assigner --input '" + string(assignerInput) + "' --includeCab " + " --clearRequestType=all ")
 
         result ,err := cmd.Output()
 
@@ -80,9 +80,9 @@ func syncArrayToAssignerConverter (inputSyncArray SyncArray) AssignerCompatibleI
     convertedSyncArray := AssignerCompatibleInput{}
     convertedSyncArray.States = make(map[string]*AssignerCompatibleElev)
 
-    for elevIter := range inputSyncArray.AllElevators { 
-        temp := elevatorToAssignerConverter(inputSyncArray.AllElevators[elevIter]) 
-        convertedSyncArray.States[inputSyncArray.AllElevators[elevIter].Id] = &temp
+    for elevId := range inputSyncArray.AllElevators { 
+        temp := elevatorToAssignerConverter(inputSyncArray.AllElevators[elevId]) 
+        convertedSyncArray.States[elevId] = &temp
     } 
 
     for floors := 0; floors < N_FLOORS; floors++ {

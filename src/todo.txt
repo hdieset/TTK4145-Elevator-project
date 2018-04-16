@@ -1,8 +1,3 @@
-1) Implementere timer in case of obstruction (skje i singeelevator.go, fsm og network blant annet?) 
-2) Endre param til types 
-3) Sette opp en main to rule them all 
-4) make it nice (se gjennom listen). 
-5) Legger til hall i samme etasje som heisen er i <- not gud 
 
 https://github.com/TTK4145/Project/blob/master/EVALUATION.md
 https://stackoverflow.com/questions/40578646/golang-i-have-a-map-of-structs-why-cant-i-directly-modify-a-field-in-a-struct

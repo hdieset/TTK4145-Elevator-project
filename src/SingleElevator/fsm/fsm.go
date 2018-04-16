@@ -16,6 +16,8 @@ func Fsm_init() {
 	Elevio_init(Panelport,N_FLOORS)
 	Elevio_setStopLamp(true)
 	Elevio_setDoorOpenLamp(false)
+	setAllCabLights()
+	setAllHallLights(AssignedOrders{})
 }
 
 func Fsm_onInitBetweenFloors() {
@@ -44,6 +46,7 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 					if elevator.Floor == floor {
 						doorOpenAtFloor = true 
 						elevator.CompletedReq[floor][buttons] = true 
+						//elevator.Requests[floor][buttons] = false -------------- er allerede false 
 					} else {
 						elevator.Requests[floor][buttons] = true
 					}
@@ -55,6 +58,7 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 					if elevator.Floor == floor {
 						idleAtFloor = true
 						elevator.CompletedReq[floor][buttons] = true
+						//elevator.Requests[floor][buttons] = false
 					} else {
 						elevator.Requests[floor][buttons] = true
 					}	
@@ -63,19 +67,17 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 		}
 	}
 
+	prevDir := elevator.Direction
 	if doorOpenAtFloor {
 		Timer_doorStart(elevator.DoorOpenDuration_s) 
-	} 
-
-	if idleAtFloor {
+	} else if idleAtFloor {
 		Elevio_setDoorOpenLamp(true)
 		Timer_doorStart(elevator.DoorOpenDuration_s)
 		elevator.Behaviour = EB_DoorOpen
-	} else {
-		elevator.Direction = Requests_chooseDirection(elevator)
+	} else if elevator.Direction = Requests_chooseDirection(elevator); elevator.Direction != D_Stop && elevator.Direction != prevDir {
 		Elevio_setMotorDirection(elevator.Direction)
 		elevator.Behaviour = EB_Moving
-		//Timer_movingStart(MAXTRAVELDURATION) // LAGT TIL HER ??????????????????!!!!!!!!!
+		Timer_movingStart(MAXTRAVELDURATION)
 	}
 
 	setAllHallLights(newOrders)
@@ -88,18 +90,16 @@ func Fsm_ReceivedNewOrderList(newOrders AssignedOrders, syncLocalElevator chan<-
 func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 	fmt.Println("Arrived at floor", newFloor)
 	
-	//Timer_movingStart(MAXTRAVELDURATION) 
-	//og starte timeren når heisen blir satt til MOVING 
+	Timer_movingStart(MAXTRAVELDURATION) 
 
 	elevator.Floor = newFloor
-	//Elevator_print(elevator)
 
 	Elevio_setFloorIndicator(elevator.Floor)
 
 	switch elevator.Behaviour {
 	case EB_Moving:
 		if Requests_shouldStop(elevator) {
-			//Timer_movingStop()
+			Timer_movingStop()
 			Elevio_setMotorDirection(D_Stop)
 			Elevio_setDoorOpenLamp(true)
 			elevator = Requests_clearAtCurrentFloor(elevator)
@@ -107,6 +107,9 @@ func Fsm_onFloorArrival(newFloor int, syncLocalElevator chan<- Elevator) {
 			setAllCabLights()
 			elevator.Behaviour = EB_DoorOpen
 		}
+	//If the elevator is initialized on a floor, then stuck timer stops 	
+	case EB_Idle: 
+		Timer_movingStop()
 	default:
 	}
 
@@ -127,7 +130,7 @@ func Fsm_onDoorTimeout(syncLocalElevator chan<- Elevator) {
 			elevator.Behaviour = EB_Idle
 		} else {
 			elevator.Behaviour = EB_Moving
-			//Timer_movingStart(MAXTRAVELDURATION)
+			Timer_movingStart(MAXTRAVELDURATION)
 		}
 	default:
 	}

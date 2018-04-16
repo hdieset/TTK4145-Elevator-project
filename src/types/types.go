@@ -6,12 +6,12 @@ var Panelport string = "localhost:15657"
 
 const (
 	SIMULATOR		  = true
-	PEERPORT 		  = 20009
-	BCASTPORT 		  = 30009	
+	PEERPORT 		  = 20069
+	BCASTPORT 		  = 30069	
 	N_FLOORS 		  = 4
 	N_BUTTONS		  = 3
 	DOOROPENDURATION  = float64(3.0) 
-	MAXTRAVELDURATION = float64(5.0)
+	MAXTRAVELDURATION = float64(3.1)
 )
 
 type PeerUpdate struct {
@@ -53,7 +53,6 @@ type Elevator struct {
 	CompletedReq [N_FLOORS][N_BUTTONS] bool
 	Behaviour 	 ElevatorBehaviour
 	DoorOpenDuration_s float64
-	Id 			string
 }
 
 type AssignedOrders struct {
@@ -71,9 +70,10 @@ const (
 
 
 type SyncArray struct {
-	AllElevators 	[]Elevator
-	HallStates 		[N_FLOORS][N_BUTTONS-1]HallReqStates
-	AckHallStates	[N_FLOORS][N_BUTTONS-1]map[string]bool
+    OwnerId         string
+    AllElevators    map[string]Elevator
+    HallStates      [N_FLOORS][N_BUTTONS-1]HallReqStates
+    AckHallStates   [N_FLOORS][N_BUTTONS-1]map[string]bool
 }
 
 type AssignerCompatibleElev struct {

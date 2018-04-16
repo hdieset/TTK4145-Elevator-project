@@ -50,7 +50,7 @@ func Transmitter(port int, id string, chans ...interface{}) {
 func Receiver(port int, id string, chans ...interface{}) {
 	checkArgs(chans...)
 
-	var buf [1024]byte
+	var buf [2048]byte
 	conn := conn.DialBroadcastUDP(port)
 	for {
 		n, _, _ := conn.ReadFrom(buf[0:])
