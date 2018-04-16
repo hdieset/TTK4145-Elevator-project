@@ -19,3 +19,5 @@ The code is separated into four major blocks; a cost module, networking module, 
 - The cost module gets information about all elevators on the network and assigns a workload to the connected elevator. It also transmitts information about Hall Orders to set the correct panel lights.
 - The syncModule is a core part which contains a state machine that ensures redundancy of all orders. It shares state information to other elevators through the networking module. A list of orders which can be assigned to all elevators is sent to the cost module for filtering. 
 - The network sends and recieves orders to other elevator nodes on an udp network.
+These are depicted below.
+![Alt text](elevatorModules.png?raw=true "Title")
