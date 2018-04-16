@@ -10,7 +10,7 @@ import(
 	"runtime"
 	."network/networkMain"
 	."SingleElevator/SingleElevatorMain"
-	."SingleElevator/extPrc"
+	//."SingleElevator/extPrc"
 	."Cost"
 	."types"
 	."SyncModule"
@@ -20,11 +20,12 @@ import(
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU()) 
 
-	if SIMULATOR {
+/*	if SIMULATOR {
 		ExtPrc_changeElevatorSimPort()
 	} else {
 		ExtPrc_initElevatorServer()
 	}
+*/
 
 	localElevatorID := Network_generateID()
 	fmt.Println("Elevator ID: ", localElevatorID)
@@ -53,9 +54,9 @@ func main() {
 		}
 	}
 
-	if !SIMULATOR {
+	/*if !SIMULATOR {
 		ExtPrc_exitElevatorServer()
-	}
+	}*/
 }
 
 

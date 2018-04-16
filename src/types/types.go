@@ -5,7 +5,7 @@ package types
 var Panelport string = "localhost:15657"
 
 const (
-	SIMULATOR		  = false
+//	SIMULATOR		  = false
 	PEERPORT 		  = 20258
 	BCASTPORT 		  = 30258	
 	N_FLOORS 		  = 4
